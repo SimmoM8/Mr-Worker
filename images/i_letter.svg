@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="a" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20.41 20.41">
+  <defs>
+    <style>.b{fill:#fff;}</style>
+  </defs>
+  <polygon class="b" style="fill: #fff;" points="4 6.63 8.74 10.2 4 13.78 4 6.63"/>
+  <polygon class="b" style="fill: #fff;" points="4.61 14.13 9.28 10.61 10.16 11.27 10.35 11.2 11.13 10.61 15.8 14.13 4.61 14.13"/>
+  <polygon class="b" style="fill: #fff;" points="4.61 6.28 15.8 6.28 10.2 10.5 4.61 6.28"/>
+  <polygon class="b" style="fill: #fff;" points="11.67 10.2 16.41 6.63 16.41 13.78 11.67 10.2"/>
+</svg>

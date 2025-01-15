@@ -1,0 +1,201 @@
+<?php
+session_start();
+
+// If user is not logged in, redirect to sign-in page
+if (!isset($_SESSION['user_id'])) {
+  header("Location: ../sign-in.html");
+  exit();
+}
+
+// Fetch the current profile image, scale, and position from the database
+include('db_connection.php'); // Assume this file contains the database connection details
+
+$user_id = $_SESSION['user_id'];
+$sql = "SELECT profile_pic, image_scale, image_pos_x, image_pos_y FROM users WHERE id=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$profile_pic = $user['profile_pic'];
+$image_scale = $user['image_scale'];
+$image_pos_x = $user['image_pos_x'];
+$image_pos_y = $user['image_pos_y'];
+$stmt->close();
+$conn->close();
+?>
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Resumes</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+<link href="../css/styles.css" rel="stylesheet" type="text/css">
+<style>
+  .profile-preview {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #000;
+    margin-top: 20px;
+  }
+
+  .profile-preview img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+  }
+
+  .edit-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    padding: 5px;
+  }
+
+  .edit-btn i {
+    font-size: 18px;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  const imagePreview = $('#profileImagePreview img');
+
+  function updateImagePreview() {
+    const scale = $('#inputScale').val();
+    const posX = $('#inputX').val();
+    const posY = $('#inputY').val();
+
+    imagePreview.css({
+      'transform': `translate(-50%, -50%) scale(${scale})`,
+      'left': `${50 + parseFloat(posX)}%`,
+      'top': `${50 + parseFloat(posY)}%`
+    });
+  }
+
+  $('#formFile').on('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      imagePreview.attr('src', event.target.result);
+      updateImagePreview();
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  });
+
+  $('#inputScale, #inputX, #inputY').on('input', function() {
+    updateImagePreview();
+  });
+
+  $('#editProfileImage').on('click', function() {
+    $('#editImageModal').modal('show');
+  });
+
+  // Initial call to update the preview with default values
+  updateImagePreview();
+});
+</script>
+</head>
+
+<body>
+<main class="d-flex">
+  <?php include_once('side_bar.html'); ?>
+  <section class="container-fluid">
+    <div class="container">
+      <h5 class="text-muted">Name's Resumes</h5>
+      <h1>Profile</h1>
+      <div class="" id="profile">
+        <form id="profileForm" class="row g-3" action="_profile.php" method="post" enctype="multipart/form-data">
+          <div class="col-md-6">
+            <label for="inputEmail4" class="form-label">Email</label>
+            <input type="email" class="form-control" id="inputEmail4" name="email">
+          </div>
+          <div class="col-md-6">
+            <label for="inputPassword4" class="form-label">Password</label>
+            <input type="password" class="form-control" id="inputPassword4" name="password">
+          </div>
+          <div class="col-12">
+            <label for="inputAddress" class="form-label">Address</label>
+            <input type="text" class="form-control" id="inputAddress" name="address" placeholder="1234 Main St">
+          </div>
+          <div class="col-12">
+            <label for="inputAddress2" class="form-label">Address 2</label>
+            <input type="text" class="form-control" id="inputAddress2" name="address2" placeholder="Apartment, studio, or floor">
+          </div>
+          <div class="col-md-6">
+            <label for="inputCity" class="form-label">City</label>
+            <input type="text" class="form-control" id="inputCity" name="city">
+          </div>
+          <div class="col-md-4">
+            <label for="inputState" class="form-label">State</label>
+            <select id="inputState" class="form-select" name="state">
+              <option selected>Choose...</option>
+              <option>...</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="inputZip" class="form-label">Zip</label>
+            <input type="text" class="form-control" id="inputZip" name="zip">
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <div class="profile-preview" id="profileImagePreview">
+              <img src="<?php echo $profile_pic; ?>" alt="Profile Image Preview">
+              <button type="button" class="edit-btn" id="editProfileImage">
+                <i class="bi bi-pencil"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+      <p class="alert"></p>
+    </div>
+  </section>
+</main>
+
+<!-- Edit Image Modal -->
+<div class="modal fade" id="editImageModal" tabindex="-1" aria-labelledby="editImageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editImageModalLabel">Edit Profile Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="imageEditForm" class="row g-3">
+          <div class="mb-3">
+            <label for="formFile" class="form-label">Change Profile Picture</label>
+            <input class="form-control" type="file" id="formFile" name="profile_pic">
+          </div>
+          <div class="col-md-6">
+            <label for="inputScale" class="form-label">Image Scale</label>
+            <input type="number" class="form-control" id="inputScale" name="image_scale" min="0.1" max="3" step="0.1" value="<?php echo $image_scale; ?>">
+          </div>
+          <div class="col-md-3">
+            <label for="inputX" class="form-label">Image Position X</label>
+            <input type="number" class="form-control" id="inputX" name="image_pos_x" min="-100" max="100" step="1" value="<?php echo $image_pos_x; ?>">
+          </div>
+          <div class="col-md-3">
+            <label for="inputY" class="form-label">Image Position Y</label>
+            <input type="number" class="form-control" id="inputY" name="image_pos_y" min="-100" max="100" step="1" value="<?php echo $image_pos_y; ?>">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="$('#profileForm').submit();">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

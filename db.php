@@ -23,4 +23,3 @@ try {
 
 }
 ?>
-DB TESTING

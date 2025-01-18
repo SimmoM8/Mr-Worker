@@ -23,3 +23,4 @@ try {
 
 }
 ?>
+DB PUSH AUTO TEST

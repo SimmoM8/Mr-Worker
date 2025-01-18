@@ -23,4 +23,4 @@ try {
 
 }
 ?>
-DB PUSH AUTO TESTINGS
+DB

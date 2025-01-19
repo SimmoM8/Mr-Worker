@@ -18,15 +18,6 @@ try {
 } catch ( PDOException $e ) {
 
   error_log("Database connection failed: " . $e->getMessage());
-
-  echo "Error Code: " . $e->getCode() . "<br>";
-  echo "Error Message: " . $e->getMessage() . "<br>";
-  echo $host . "<br>";
-echo $db . "<br>";
-echo $user . "<br>";
-echo $pass;
-
-
   exit('Database connection failed.');
 
 }

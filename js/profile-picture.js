@@ -8,7 +8,7 @@
  * @param {string} [defaultImg='path/to/default-icon.png'] - The default image to use if no profile picture is set.
  */
 
-function renderProfilePicture(containerSelector, callback, altPath, defaultImg = 'uploads/test_profile_pic.png') {
+function renderProfilePicture(containerSelector, callback, altPath, defaultImg = 'uploads/profile_default.jpeg') {
   console.log("rendering image");
   const container = document.querySelector(containerSelector);
 

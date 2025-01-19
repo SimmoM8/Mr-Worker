@@ -194,25 +194,29 @@ function submitForm() {
         $.ajax({
             url: 'register.php',
             type: 'POST',
-            data: formData,
+            data: JSON.stringify(formData), // Send data as JSON
+            contentType: 'application/json', // Set the content type to JSON
             success: function(response) {
-                if (response.startsWith("success")) {
+                if (response.success) {
 					$.ajax ({
 						url: 'login.php',
 						type: 'POST',
 						data: formData,
 						success: function() {
-                    		window.location.href = 'welcome.php';
-						}
+                    		window.location.href = 'my';
+						},
+                        error: function() {
+                            messageDiv.innerHTML = 'Error logging in.';
+                        }
 					});
                 } else {
-                    messageDiv.innerHTML = response;
+                    messageDiv.innerHTML = response.error;
                     messageDiv.classList.remove('text-success');
                     messageDiv.classList.add('text-danger');
                 }
             },
-            error: function(response) {
-                messageDiv.innerHTML = 'Error submitting form. Please try again. : ' + response;
+            error: function(xhr, status, error) {
+                messageDiv.innerHTML = `Error submitting form: ${error}`;
                 messageDiv.classList.add('text-danger');
             }
         });

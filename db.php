@@ -6,7 +6,7 @@ $pass = getenv('DB_PASS');
 $db = getenv('DB_NAME');
 $charset = 'utf8mb4';
 
-$dsn = "mysql:unix_socket=/run/mysqld/mysqld.sock;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
   PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
   PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

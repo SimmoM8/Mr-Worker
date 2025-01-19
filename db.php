@@ -20,8 +20,13 @@ try {
   error_log("Database connection failed: " . $e->getMessage());
 
   echo "Error Code: " . $e->getCode() . "<br>";
-  echo "Error Message: " . $e->getMessage();
-  
+  echo "Error Message: " . $e->getMessage() . "<br>";
+  echo $DB_HOST . "<br>";
+echo $DB_NAME . "<br>";
+echo $DB_USER . "<br>";
+echo $DB_PASS;
+
+
   exit('Database connection failed.');
 
 }

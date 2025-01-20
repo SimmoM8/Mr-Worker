@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const buttons = document.querySelectorAll("#sidebar .nav-link"); // Select all sidebar buttons
+  const buttons = document.querySelectorAll(".sidebar-nav .nav-link"); // Select all sidebar buttons
   const mainContent = document.getElementById("main-content"); // The main content area
 
   // Function to dynamically load content
@@ -19,25 +19,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Update the active button
         updateActiveButton(page);
-
       } else {
         mainContent.innerHTML = `<p>Error loading page: ${xhr.status}</p>`;
       }
     };
     xhr.onerror = function () {
-      mainContent.innerHTML = "<p>An error occurred while loading the page.</p>";
+      mainContent.innerHTML =
+        "<p>An error occurred while loading the page.</p>";
     };
     xhr.send();
   }
 
-  document.getElementById("reportButton").addEventListener("click", () => {
-    const form = document.getElementById("reportForm");
-    toggleFormVisibility(form);
-  });
-
   document.addEventListener("click", (event) => {
     const form = document.getElementById("reportForm");
     const reportButton = document.getElementById("reportButton");
+
+    toggleFormVisibility(form);
 
     // Hide the form if clicking outside of it and not on the button
     if (!form.contains(event.target) && !reportButton.contains(event.target)) {
@@ -62,9 +59,9 @@ document.addEventListener("DOMContentLoaded", function () {
     formData.append("submitReport", true);
 
     fetch("save_report.php", {
-        method: "POST",
-        body: formData,
-      })
+      method: "POST",
+      body: formData,
+    })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
@@ -105,11 +102,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 3000);
   }
 
-
   // Function to re-execute scripts within loaded content
   function executeScripts(container) {
     const scripts = container.querySelectorAll("script");
-    scripts.forEach(script => {
+    scripts.forEach((script) => {
       const newScript = document.createElement("script");
       if (script.src) {
         // For external scripts, copy the src attribute and load asynchronously
@@ -120,13 +116,12 @@ document.addEventListener("DOMContentLoaded", function () {
         newScript.textContent = script.textContent;
       }
       document.body.appendChild(newScript); // Append and execute the script
-      console.log(`Script executed: ${script.src || "inline script"}`);
     });
   }
 
   // Function to update active button
   function updateActiveButton(page) {
-    buttons.forEach(button => {
+    buttons.forEach((button) => {
       if (button.getAttribute("data-page") === page) {
         button.classList.add("active");
       } else {
@@ -146,14 +141,18 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Add click event listeners to sidebar buttons
-  buttons.forEach(button => {
+  buttons.forEach((button) => {
     button.addEventListener("click", function () {
       const page = this.getAttribute("data-page");
 
       // Update the browser URL
-      window.history.pushState({
-        page: page
-      }, "", `?page=${page}`);
+      window.history.pushState(
+        {
+          page: page,
+        },
+        "",
+        `?page=${page}`
+      );
 
       // Load the selected page
       loadPage(page);

@@ -9,7 +9,37 @@ $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) {
   mkdir($uploadDir, 0777, true);
 }
+error_log("Script started.");
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  error_log("Request method not POST.");
+  respondWithError("Invalid request method.", 405);
+}
+
+if (!isset($_FILES['file'])) {
+  error_log("No file detected in request.");
+  respondWithError("No file uploaded.", 400);
+}
+
+error_log("Uploaded file details: " . print_r($_FILES, true));
+// Check for upload errors
+if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+  error_log("File upload error: " . $_FILES['file']['error']);
+  respondWithError("File upload error occurred.", 400);
+}
+
+// Check upload directory
+if (!is_dir($uploadDir)) {
+  error_log("Upload directory does not exist: $uploadDir");
+  respondWithError("Upload directory not found.", 500);
+}
+
+// Test move_uploaded_file
+if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
+  error_log("Failed to move uploaded file.");
+  respondWithError("Failed to save uploaded file.", 500);
+}
+// Check for upload errors
 if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   // Clear temporary files for the user
   clearTemporaryFiles($uploadDir, $userId);

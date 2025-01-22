@@ -41,19 +41,24 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   }
 
   // Test move_uploaded_file
+
+  error_log("Testing file moving.");
   if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
     error_log("Failed to move uploaded file.");
     respondWithError("Failed to save uploaded file.", 500);
   }
+  error_log("Testing file size.");
   if ($_FILES['file']['size'] > 10485760) { // 10 MB
     error_log("File size exceeds limit: " . $_FILES['file']['size']);
     respondWithError("File size exceeds limit.", 400);
   }
+  error_log("Moving file");
   if (move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
     $jpegFileName = $tempFileName;
     $jpegFilePath = $uploadDir . $jpegFileName;
 
     // Use CLI to convert the file to JPEG
+    error_log("Converting to JPEG");
     if (convertToJpegUsingCli($convFilePath, $jpegFilePath)) {
       unlink($convFilePath); // Clean up the temporary file
       respondWithSuccess("uploads/" . $jpegFileName);

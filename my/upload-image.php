@@ -23,39 +23,6 @@ if (!isset($_FILES['file'])) {
 
 error_log("Uploaded file details: " . print_r($_FILES, true));
 // Check for upload errors
-if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-  $errorMessages = [
-    1 => "The uploaded file exceeds the upload_max_filesize directive in php.ini.",
-    2 => "The uploaded file exceeds the MAX_FILE_SIZE directive specified in the HTML form.",
-    3 => "The uploaded file was only partially uploaded.",
-    4 => "No file was uploaded.",
-    6 => "Missing a temporary folder.",
-    7 => "Failed to write file to disk.",
-    8 => "A PHP extension stopped the file upload."
-  ];
-
-  $error = $_FILES['file']['error'];
-  error_log("Upload error $error: " . ($errorMessages[$error] ?? "Unknown error"));
-  respondWithError($errorMessages[$error] ?? "Unknown upload error.", 400);
-}
-
-
-// Check upload directory
-if (!is_dir($uploadDir)) {
-  error_log("Upload directory does not exist: $uploadDir");
-  respondWithError("Upload directory not found.", 500);
-}
-
-// Test move_uploaded_file
-if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
-  error_log("Failed to move uploaded file.");
-  respondWithError("Failed to save uploaded file.", 500);
-}
-if ($_FILES['file']['size'] > 10485760) { // 10 MB
-  error_log("File size exceeds limit: " . $_FILES['file']['size']);
-  respondWithError("File size exceeds limit.", 400);
-}
-
 
 // Check for upload errors
 if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
@@ -67,7 +34,21 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   $convFilePath = $uploadDir . $conversionFileName;
   $tempFileName = "_temp_profile_picture_user_{$userId}." . ".jpeg";
   $tempFilePath = $uploadDir . $tempFileName;
+  // Check upload directory
+  if (!is_dir($uploadDir)) {
+    error_log("Upload directory does not exist: $uploadDir");
+    respondWithError("Upload directory not found.", 500);
+  }
 
+  // Test move_uploaded_file
+  if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
+    error_log("Failed to move uploaded file.");
+    respondWithError("Failed to save uploaded file.", 500);
+  }
+  if ($_FILES['file']['size'] > 10485760) { // 10 MB
+    error_log("File size exceeds limit: " . $_FILES['file']['size']);
+    respondWithError("File size exceeds limit.", 400);
+  }
   if (move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
     $jpegFileName = $tempFileName;
     $jpegFilePath = $uploadDir . $jpegFileName;
@@ -84,6 +65,19 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   }
 } else {
   respondWithError("No file uploaded or upload error occurred.", 400);
+  $errorMessages = [
+    1 => "The uploaded file exceeds the upload_max_filesize directive in php.ini.",
+    2 => "The uploaded file exceeds the MAX_FILE_SIZE directive specified in the HTML form.",
+    3 => "The uploaded file was only partially uploaded.",
+    4 => "No file was uploaded.",
+    6 => "Missing a temporary folder.",
+    7 => "Failed to write file to disk.",
+    8 => "A PHP extension stopped the file upload."
+  ];
+
+  $error = $_FILES['file']['error'];
+  error_log("Upload error $error: " . ($errorMessages[$error] ?? "Unknown error"));
+  respondWithError($errorMessages[$error] ?? "Unknown upload error.", 400);
 }
 
 /**

@@ -39,6 +39,7 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
     respondWithError("Upload directory not found.", 500);
   }
   error_log("Temporary directory writable: " . (is_writable('/var/tmp') ? 'yes' : 'no'));
+  error_log("Destination path: $convFilePath");
   error_log("Directory permissions: " . substr(sprintf('%o', fileperms($uploadDir)), -4));
   error_log("Is writable by PHP: " . (is_writable($uploadDir) ? 'yes' : 'no'));
 

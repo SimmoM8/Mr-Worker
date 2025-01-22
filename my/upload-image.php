@@ -39,6 +39,12 @@ if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
   error_log("Failed to move uploaded file.");
   respondWithError("Failed to save uploaded file.", 500);
 }
+if ($_FILES['file']['size'] > 10485760) { // 10 MB
+  error_log("File size exceeds limit: " . $_FILES['file']['size']);
+  respondWithError("File size exceeds limit.", 400);
+}
+
+
 // Check for upload errors
 if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   // Clear temporary files for the user

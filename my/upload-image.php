@@ -38,6 +38,7 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
     error_log("Upload directory does not exist: $uploadDir");
     respondWithError("Upload directory not found.", 500);
   }
+  error_log("Temporary directory writable: " . (is_writable('/var/tmp') ? 'yes' : 'no'));
 
   // Test move_uploaded_file
   if (!file_exists($_FILES['file']['tmp_name'])) {

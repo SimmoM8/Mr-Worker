@@ -74,6 +74,12 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   } else {
     respondWithError("Failed to upload file.");
   }
+  if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
+    error_log("Failed to move uploaded file.");
+    error_log("Error details: " . json_encode(error_get_last()));
+    respondWithError("Failed to upload file.");
+  }
+
 } else {
   respondWithError("No file uploaded or upload error occurred.", 400);
   $errorMessages = [

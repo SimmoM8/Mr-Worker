@@ -55,6 +55,11 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
     error_log("File size exceeds limit: " . $_FILES['file']['size']);
     respondWithError("File size exceeds limit.", 400);
   }
+  if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
+    error_log("Failed to move uploaded file.");
+    error_log("Error details: " . json_encode(error_get_last()));
+    respondWithError("Failed to upload file.");
+  }
   error_log("Moving file");
   error_log("Temporary file path: " . $_FILES['file']['tmp_name']);
   error_log("Destination file path: " . $convFilePath);
@@ -72,11 +77,6 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
       respondWithError("Image conversion failed.");
     }
   } else {
-    respondWithError("Failed to upload file.");
-  }
-  if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
-    error_log("Failed to move uploaded file.");
-    error_log("Error details: " . json_encode(error_get_last()));
     respondWithError("Failed to upload file.");
   }
 

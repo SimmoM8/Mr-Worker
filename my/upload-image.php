@@ -22,7 +22,6 @@ if (!isset($_FILES['file'])) {
 }
 
 error_log("Uploaded file details: " . print_r($_FILES, true));
-// Check for upload errors
 
 // Check for upload errors
 if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
@@ -41,6 +40,10 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
   }
 
   // Test move_uploaded_file
+  if (!file_exists($_FILES['file']['tmp_name'])) {
+    error_log("Temporary file does not exist.");
+    respondWithError("Temporary file not found.");
+  }
 
   error_log("Testing file moving.");
   if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
@@ -53,6 +56,9 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
     respondWithError("File size exceeds limit.", 400);
   }
   error_log("Moving file");
+  error_log("Temporary file path: " . $_FILES['file']['tmp_name']);
+  error_log("Destination file path: " . $convFilePath);
+
   if (move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
     $jpegFileName = $tempFileName;
     $jpegFilePath = $uploadDir . $jpegFileName;

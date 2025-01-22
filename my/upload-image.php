@@ -142,7 +142,7 @@ function respondWithSuccess($filePath)
  */
 function respondWithError($message, $statusCode = 500)
 {
-  error_log('RESPONSE MESSAGE: ' . $message);
+  error_log($message);
   http_response_code($statusCode);
   echo json_encode([
     'status' => 'error',

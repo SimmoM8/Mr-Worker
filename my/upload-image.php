@@ -24,9 +24,21 @@ if (!isset($_FILES['file'])) {
 error_log("Uploaded file details: " . print_r($_FILES, true));
 // Check for upload errors
 if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-  error_log("File upload error: " . $_FILES['file']['error']);
-  respondWithError("File upload error occurred.", 400);
+  $errorMessages = [
+    1 => "The uploaded file exceeds the upload_max_filesize directive in php.ini.",
+    2 => "The uploaded file exceeds the MAX_FILE_SIZE directive specified in the HTML form.",
+    3 => "The uploaded file was only partially uploaded.",
+    4 => "No file was uploaded.",
+    6 => "Missing a temporary folder.",
+    7 => "Failed to write file to disk.",
+    8 => "A PHP extension stopped the file upload."
+  ];
+
+  $error = $_FILES['file']['error'];
+  error_log("Upload error $error: " . ($errorMessages[$error] ?? "Unknown error"));
+  respondWithError($errorMessages[$error] ?? "Unknown upload error.", 400);
 }
+
 
 // Check upload directory
 if (!is_dir($uploadDir)) {

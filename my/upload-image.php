@@ -92,7 +92,7 @@ function convertToJpegUsingCli($inputPath, $outputPath)
     return false;
   }
 
-  $command = escapeshellcmd("$convertCommand '$inputPath' -strip -quality 90 '$outputPath'");
+  $command = escapeshellcmd("$convertCommand '$inputPath' -auto-orient -strip -quality 90 '$outputPath'");
   exec($command, $output, $returnVar);
 
 

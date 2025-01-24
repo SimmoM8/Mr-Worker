@@ -16,6 +16,7 @@ $(document).ready(function () {
   let dragging = false,
     startX = 0,
     startY = 0;
+  let rotationAngle = 0; // Track rotation angle
 
   // Render the profile picture with the overlay if required
   function renderImage(containerSelector, addOverlay = false, altPath) {
@@ -51,6 +52,7 @@ $(document).ready(function () {
 
   // Open modal for editing the image
   profileImagePreview.on('click', '.overlay', function () {
+    resetEditModal();
     const modal = new bootstrap.Modal(document.getElementById('editImageModal'));
     modal.show();
 
@@ -62,12 +64,8 @@ $(document).ready(function () {
       // Get the container width dynamically
       const container = $(editableImageContainerId);
       const containerWidth = container.width(); // Current container width
-      console.log('Container Width:', containerWidth);
-      console.log('Adjustment X:', adjustmentX, 'Adjustment Y:', adjustmentY, 'Scale:', adjustmentScale);
 
       renderImage(editableImageContainerId, false);
-      console.log('Container Width:', containerWidth);
-      console.log('Adjustment X:', adjustmentX, 'Adjustment Y:', adjustmentY, 'Scale:', adjustmentScale);
 
 
       // Initialize values for editing
@@ -114,8 +112,6 @@ $(document).ready(function () {
     if (editMask) {
       editMask.style.visibility = 'hidden';
     }
-
-    console.log('Edit modal has been reset.');
   }
 
   // Save adjustments on click
@@ -157,11 +153,6 @@ $(document).ready(function () {
         alert('Failed to save profile picture.');
       }
     });
-  });
-
-  // Alternatively, if using Bootstrap's modal event:
-  $('#editModal').on('hidden.bs.modal', function () {
-    resetEditModal();
   });
 
   // Handle dragging for X/Y adjustments
@@ -217,7 +208,7 @@ $(document).ready(function () {
 
         // Apply translation to the image
         img.css({
-          transform: `translate(-50%, -50%) translate(${adjustmentX}px, ${adjustmentY}px) scale(${adjustmentScale})`,
+          transform: `translate(-50%, -50%) translate(${adjustmentX}px, ${adjustmentY}px) scale(${adjustmentScale}) rotate(${rotationAngle}deg)`,
         });
 
         // Update starting positions for the next move
@@ -244,11 +235,48 @@ $(document).ready(function () {
 
   // Handle scaling via slider
   imageScaleSlider.on('input', function () {
-    adjustmentScale = parseFloat($(this).val()) || 1.1;
+    const container = $(editableImageContainerId); // Container element
+    const img = container.find('img'); // Image element
+
+    const previousScale = adjustmentScale; // Previous scale value
+    const imgWidth = img.width() * previousScale;
+    const imgHeight = img.height() * previousScale;
+    
+    const ratioKonstantX = imgWidth / (4 * adjustmentX);
+    const ratioKonstantY = imgHeight / (4 * adjustmentY);
+
+    adjustmentScale = parseFloat($(this).val()) || 1; // New scale value
+
+    const newImgWidth = img.width() * adjustmentScale;
+    const newImgHeight = img.height() * adjustmentScale;
+
+    adjustmentX = newImgWidth / (4 * ratioKonstantX);
+    adjustmentY = newImgHeight / (4 * ratioKonstantY);
+
+    // Enforce boundaries
+    const containerWidth = container.width(); // Container width
+    const containerHeight = container.height(); // Container height
+
+    const minX = containerWidth / 2 - newImgWidth / 2;
+    const maxX = containerWidth / 2 + newImgWidth / 2 - containerWidth;
+
+    const minY = containerHeight / 2 - newImgHeight / 2;
+    const maxY = containerHeight / 2 + newImgHeight / 2 - containerHeight;
+
+    adjustmentX = Math.min(maxX, Math.max(minX, adjustmentX));
+    adjustmentY = Math.min(maxY, Math.max(minY, adjustmentY));
+    img.css({
+      transform: `translate(-50%, -50%) translate(${adjustmentX}px, ${adjustmentY}px) scale(${adjustmentScale}) rotate(${rotationAngle}deg)`
+    });
+  });
+
+  // Handle rotation
+  $('#rotateImageButton').on('click', function () {
+    rotationAngle = (rotationAngle + 90) % 360; // Increment angle by 90 degrees
     const img = $(editableImageContainerId).find('img');
 
     img.css({
-      transform: `translate(-50%, -50%) translate(${adjustmentX}px, ${adjustmentY}px) scale(${adjustmentScale})`
+      transform: `translate(-50%, -50%) translate(${adjustmentX}px, ${adjustmentY}px) scale(${adjustmentScale}) rotate(${rotationAngle}deg)`,
     });
   });
 
@@ -286,6 +314,7 @@ $(document).ready(function () {
       alert('Failed to fetch user data');
     }
   });
+
   // Function to toggle between display and edit modes for a group
   function toggleEditMode(groupSelector, isEditing) {
     const group = $(groupSelector);
@@ -363,6 +392,7 @@ $(document).ready(function () {
       },
     });
   });
+
   // Function to show a floating message bubble
   function showMessage(message, isSuccess = true) {
     const messageBubble = $('<div>')
@@ -432,12 +462,24 @@ $(document).ready(function () {
       fileInput.remove();
     });
   });
-
-  // Reset slider on input change
-  $('#imageScaleSlider').on('input', function () {
-    adjustmentScale = $(this).val();
-    $('#editableImageContainer img').css({
-      transform: `translate(-50%, -50%) scale(${adjustmentScale})`,
-    });
-  });
 });
+
+function updateMaskSize() {
+  const container = document.getElementById('editableImageContainer');
+  const mask = document.querySelector('.edit-mask');
+  
+  if (container && mask) {
+    const containerWidth = container.offsetWidth; // Get the container's width
+    const maskSize = containerWidth / 2; // Adjust size to match radius of container
+
+    // Update the mask size dynamically
+    mask.style.maskImage = `radial-gradient(circle ${maskSize}px at center, transparent ${maskSize - 1}px, white ${maskSize + 1}px)`;
+    mask.style.webkitMaskImage = `radial-gradient(circle ${maskSize}px at center, transparent ${maskSize - 1}px, white ${maskSize + 1}px)`;
+  }
+}
+
+// Update the mask size when the modal is shown
+document.getElementById('editImageModal').addEventListener('shown.bs.modal', updateMaskSize);
+
+// Update the mask size on window resize
+window.addEventListener('resize', updateMaskSize);

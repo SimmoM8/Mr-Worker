@@ -8,8 +8,16 @@
     <h1>Profile</h1>
     <!-- Profile Form -->
     <form id="profileForm">
-      <div class="row g-3" id="profile">
-        <div class="col-md-6 row g-3"> 
+      <div class="row" id="profile">
+
+        <div class="col-md-6 g-3">
+          <!-- Profile Image Preview -->
+          <div class="col-12 d-flex justify-content-center align-items-center">
+            <div id="profileImagePreview" class="position-relative" style="border-radius: 50%; overflow: hidden; border: 2px solid #ddd; width: 50%;"></div>
+          </div>
+        </div>
+
+        <div class="col-md-6 g-3">
           <!-- First and Last Name Group -->
           <div class="col-12 card card-body card-colored">
             <div class="justify-content-between input-group align-items-center input-group-header">
@@ -28,7 +36,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Mobile Group -->
           <div class="col-12 card card-body card-colored">
             <div class="justify-content-between input-group align-items-center input-group-header">
@@ -47,7 +55,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Address Group -->
           <div class="col-12 card card-body card-colored">
             <div class="justify-content-between input-group align-items-center input-group-header">
@@ -77,13 +85,12 @@
             </div>
           </div>
         </div>
-        <div class="col-md-6 row g-3"> 
-          <!-- Profile Image Preview -->
-          <div class="col-12 d-flex justify-content-center">
-            <div id="profileImagePreview" class="position-relative" style="width: 200px; height: 200px; border-radius: 50%; overflow: hidden; border: 2px solid #ddd;"></div>
-          </div>
-          
-          <!-- About Me Group -->
+
+      </div>
+
+      <!-- About Me Group -->
+      <div class="row">
+        <div class="col">
           <div class="col-12 card card-body card-colored">
             <div class="justify-content-between input-group align-items-center input-group-header">
               <h4>About Me</h4>
@@ -96,12 +103,13 @@
           </div>
         </div>
       </div>
+
       <!-- Save Button -->
       <div class="col-12">
         <button type="submit" class="btn btn-primary">Save</button>
       </div>
     </form>
-    
+
     <!-- Edit Image Modal -->
     <div class="modal fade" id="editImageModal" tabindex="-1" aria-labelledby="editImageModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-md">
@@ -111,27 +119,28 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body d-flex flex-column align-items-center justify-content-center">
-            <div id="editImage"> 
+            <div id="editImage">
               <!-- Faded overlay with circular cutout -->
               <div class="edit-mask" style="margin: auto; position: absolute; z-index: 2;"></div>
               <!-- Profile Picture Container -->
               <div class="edit-image-container text-center position-relative" id="editableImageContainer"></div>
             </div>
-            
-            <!-- Change Image Button and Options -->
-            <div id="changeImageWrapper dropdown" class="position-relative mt-3 d-flex justify-content-center align-items-center">
-              <button id="changeImageButton" class="btn btn-primary position-absolute dropdown-toggle" id="dropdownChangeImage" data-bs-toggle="dropdown" aria-expanded="false">
-              Change Image
+            <div class="card card-colored d-flex flex-column align-items-center mt-3" style="position: absolute; right: var(--bs-modal-padding); z-index: 2;">
+              <div class="slider-container d-flex flex-column align-items-center">
+                <input type="range" id="imageScaleSlider" class="form-range mt-3" min="1" max="5" step="0.1" value="1">
+              </div>
+              <!-- Rotation Button -->
+              <button id="rotateImageButton" class="menu-btn mt-3">
+                <i class="fa-solid fa-undo"></i>
               </button>
-              <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownChangeImage">
-                <li><a class="dropdown-item" id="uploadFileButton">Upload</a></li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item" id="uploadCameraButton">Camera</a></li>
-              </ul>
+
             </div>
-            <input type="range" id="imageScaleSlider" class="form-range mt-3" min="1" max="5" step="0.1" value="1">
+            <!-- Change Image Button and Options -->
+            <div class="position-relative mt-3 d-flex justify-content-center align-items-center">
+              <button id="uploadFileButton" class="btn btn-primary">
+                Change Image
+              </button>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

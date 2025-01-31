@@ -33,7 +33,7 @@ $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
         <div class="row">
-            <div class="col-6">
+            <div class="col">
                 <div class="card card-body card-colored">
                     <h4>User reports and suggestions</h4>
                     <table id="user_reports_table">

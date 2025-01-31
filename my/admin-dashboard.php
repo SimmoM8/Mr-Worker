@@ -33,24 +33,26 @@ $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
         <div class="row">
-            <div class="col card card-body card-colored">
-                <h4>User reports and suggestions</h4>
-                <table id="user_reports_table">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Report message</th>
-                            <th scope="col">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        foreach ($response as $row) {
-                            echo '<tr><th scope="row">' . $row[''] . '</th><td>' . $row['report_message'] . '</td><td>' . $row['report_date'] . '</td></tr>';
-                        }
-                        ?>
-                    </tbody>
-                </table>
+            <div class="col-6">
+                <div class="card card-body card-colored">
+                    <h4>User reports and suggestions</h4>
+                    <table id="user_reports_table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Report message</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            foreach ($response as $row) {
+                                echo '<tr><th scope="row">' . $row[''] . '</th><td>' . $row['report_message'] . '</td><td>' . $row['report_date'] . '</td></tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -2,17 +2,18 @@
 require 'db.php';
 session_start();
 
-$username = htmlspecialchars(trim($_POST['username']));
+$input = htmlspecialchars(trim($_POST['username'])); // Can be either username or email
 $password = $_POST['password'];
 
-if (!$username || !$password) {
-    echo 'Username and password are required.';
+if (!$input || !$password) {
+    echo 'Username/email and password are required.';
     exit;
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT id, password FROM users WHERE username = ?');
-    $stmt->execute([$username]);
+    // Check if input matches either username or email
+    $stmt = $pdo->prepare('SELECT id, password FROM users WHERE username = ? OR email = ?');
+    $stmt->execute([$input, $input]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
@@ -20,9 +21,8 @@ try {
         header('Location: my/index.php');
         exit;
     } else {
-        echo 'Invalid username or password.';
+        echo 'Invalid username, email, or password.';
     }
 } catch (PDOException $e) {
     echo 'An error occurred.';
 }
-?>

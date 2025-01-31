@@ -10,7 +10,7 @@
     <form id="profileForm">
       <div class="row" id="profile">
 
-        <div class="col-md-6 g-3">
+        <div class="col-md-6 g-3 d-flex">
           <!-- Profile Image Preview -->
           <div class="col-12 d-flex justify-content-center align-items-center">
             <div id="profileImagePreview" class="position-relative" style="border-radius: 50%; overflow: hidden; border: 2px solid #ddd; width: 50%;"></div>

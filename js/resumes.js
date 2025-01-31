@@ -30,6 +30,35 @@ const Resumes = {
     $(document).on('click', '#cancelBtn, .close-button', Resumes.closeModal);
     $(document).on('click', '#submitBtn', () => Resumes.handleAjax('update_session.php', $('#modal_resume form').serialize(), 'POST', Resumes.nextTab));
     $(document).on('click', '#updateBtn', () => Resumes.handleAjax('update_session.php', $('#modal_resume form').serialize(), 'POST', Resumes.handleUpdateResume));
+
+
+    // Toggle the collapsible content when clicking the toggle icon
+    $(document).off('click', '.toggle-container').on('click', '.toggle-container', function (event) {
+        event.stopPropagation(); // Prevent click from bubbling up to the header
+        const content = $(this).closest('.experience_card').find('.collapsible-content');
+
+        if (content.length) {
+            content.slideToggle(300); // Toggle with animation
+            $(this).find('.toggle-icon').toggleClass('bi-chevron-down bi-chevron-up'); // Toggle arrow icon
+        }
+    });
+
+    // Toggle checkbox & selection when clicking the experience header or checkbox
+    $(document).off('click', '.experience-header, .experience-checkbox')
+        .on('click', '.experience-header, .experience-checkbox', function (event) {
+            // Ensure the toggle icon click doesn't trigger checkbox toggle
+            if ($(event.target).closest('.toggle-container, .toggle-icon').length) {
+                return;
+            }
+
+            const checkbox = $(this).closest('.experience-header').find('.experience-checkbox');
+            checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+        });
+
+    // Apply border effect when checkbox is toggled
+    $(document).off('change', '.experience-checkbox').on('change', '.experience-checkbox', function () {
+        $(this).closest('.experience_card').toggleClass('selected', this.checked);
+    });
   },
 
   openModal: function (mode, id = null) {
@@ -107,6 +136,7 @@ const Resumes = {
       });
   },
 
+  // Fetch and generate skills and experience for adding or editing a resume
   fetchAndGenerateList: function (types) {
     console.log(`Fetching data for types: ${types}`); // Debugging
 
@@ -176,19 +206,26 @@ const Resumes = {
                   }
 
                   container.append(`
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="${p}_${item.id}" value="${item.id}" name="${p}[]" ${isChecked}>
-                    <label class="form-check-label" for="${p}_${item.id}">Include this item</label>
-                  </div>
-                  <div class="card mb-3">
-                    <div class="card-body">
+                  <div class="experience_card card card-colored mb-3 ${isChecked ? 'selected' : ''}">
+                    <div class="experience-header card-body">
                       <h5 class="card-title">${item.title}</h5>
-                      <p class="card-text">${item.organization}</p>
-                      <p class="card-text">
-                        <small class="text-muted">${item.start_date} - ${item.end_date}</small>
-                      </p>
-                      ${skillsHtml}
+                      <p class="">${item.organization}</p>
+
+                      <!-- Checkbox Positioned to the Right -->
+                      <div class="checkbox-container">
+                        <p style="margin: 0px;">
+                          <small class="text-muted">${item.start_date} - ${item.end_date}</small>
+                        </p>
+                          <input class="form-check-input experience-checkbox" type="checkbox" id="checkbox_${item.id}" value="${item.id}" name="${p}[]" ${isChecked}>
+                      </div>
+
+                      <!-- Toggle Icon Positioned at the Bottom Center -->
+                      <div class="toggle-container">
+                          <i class="bi bi-chevron-down toggle-icon"></i>
+                      </div>
                     </div>
+
+                    <div class="collapsible-content">${skillsHtml}</div>
                   </div>
                 `);
                 }

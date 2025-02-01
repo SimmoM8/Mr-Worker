@@ -134,7 +134,7 @@ const Experience = {
                 <li class="skill-item list-group-item" data-id="${skill.skill_id}" data-employer="${experience.id}" data-call="${call}">
                   <div class="d-flex">
 					  <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.skill_id}">
-						<i class="fas fa-trash-alt"></i>
+						<i class="fas fa-square-minus"></i>
 					  </button>
                     <span class="point-text">${skill.skill_name}</span>
                   </div>
@@ -143,7 +143,7 @@ const Experience = {
           </div>
           <div class="input-group mb-3">
 			<input type="text" class="form-control" id="input_experience_${experience.id}" placeholder="Type your skill here">
-            <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${experience.id}" onClick="Experience.addPoint('${call}', '${experience.id}')">Add Skill</button>
+            <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${experience.id}" onClick="Experience.addPoint('${call}', '${experience.id}')"><i class="fas fa-square-plus"></i></button>
           </div>
         </div>
       </div>

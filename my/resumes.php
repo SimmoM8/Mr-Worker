@@ -32,7 +32,7 @@ Ideas:<br>
         </nav>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick="Resumes.closeModal()"></button>
       </div>
-      <div class="modal-body"> 
+      <div class="modal-body">
         <!-- Navigation for New Mode -->
         <nav id="nav-new">
           <div class="nav nav-pills nav-fill">
@@ -42,25 +42,25 @@ Ideas:<br>
             <button class="nav-link" id="modal-new-nav-education-tab" data-current="education" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('education')" disabled>Education</button>
           </div>
         </nav>
-        
+
         <!-- Tab Content -->
-        <div class="tab-content" id="nav-tabContent">
-          <div class="tab-pane fade show active" id="modal-content" role="tabpanel" tabindex="0"> </div>
+        <div class="tab-content" id="nav-tabContent" style="overflow-y: auto; height: 100%;">
+          <div class="tab-pane fade show active" id="modal-content" role="tabpanel" tabindex="0" style="height: 100%;"> </div>
         </div>
       </div>
-      <div class="modal-footer"> 
+      <div class="modal-footer">
         <!-- Buttons -->
-        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal" aria-label="Cancel" onClick="Resumes.closeModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" id="submitBtn">Next</button>
-        <button type="button" class="btn btn-secondary" id="closeBtn" data-bs-dismiss="modal" aria-label="Close" onClick="Resumes.closeModal()">Close</button>
-        <button type="button" class="btn btn-primary" id="updateBtn">Save</button>
+        <button type="button" class="btn btn-secondary main-btn" id="cancelBtn" data-bs-dismiss="modal" aria-label="Cancel" onClick="Resumes.closeModal()">Cancel</button>
+        <button type="button" class="btn btn-primary main-btn" id="submitBtn">Next</button>
+        <button type="button" class="btn btn-secondary main-btn" id="closeBtn" data-bs-dismiss="modal" aria-label="Close" onClick="Resumes.closeModal()">Close</button>
+        <button type="button" class="btn btn-primary main-btn" id="updateBtn">Save</button>
       </div>
     </div>
   </div>
 </div>
 <script>
-    console.log("Inline script in resumes.php executed");
-    if (typeof Resumes !== "undefined" && Resumes.init) {
-      Resumes.init(); // Initialize Experience.js for this page
-    }
-  </script> 
+  console.log("Inline script in resumes.php executed");
+  if (typeof Resumes !== "undefined" && Resumes.init) {
+    Resumes.init(); // Initialize Experience.js for this page
+  }
+</script>

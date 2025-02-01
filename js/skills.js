@@ -56,8 +56,8 @@ function ajaxRequest(url, method, data, onSuccess) {
 function createLanguageSkill(skill) {
   return `
     <li class="skill-item list-group-item" data-id="${skill.id}" data-percentage="${skill.percentage}">
-      <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.id}">
-        <i class="fas fa-trash-alt"></i>
+      <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
+        <i class="fas fa-square-minus"></i>
       </button>
       <span>${skill.language} - <span class="percentage-display">${skill.percentage}</span>%</span>
       <div class="progress mt-2 position-relative">
@@ -76,8 +76,8 @@ function createLanguageSkill(skill) {
 function createSkillItem(skill) {
   return `
     <li class="skill-item d-flex list-group-item list-group-item-action" style="align-items: center;" data-id="${skill.id}">
-      <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.id}">
-        <i class="fas fa-trash-alt"></i>
+      <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
+        <i class="fas fa-square-minus"></i>
       </button>
       <span class="point-text">${skill.skill}</span>
     </li>

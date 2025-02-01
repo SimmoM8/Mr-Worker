@@ -1,6 +1,5 @@
 <div class="main-nav">
-  <aside
-    class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark fixed-top vh-100"
+  <aside class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark fixed-top vh-100"
     style="width: 280px"
     id="sidebar">
     <a
@@ -82,6 +81,15 @@
         </li>
         <li><a class="dropdown-item" href="../sign-in.html">Sign out</a></li>
       </ul>
+    </div>
+    <hr>
+    <div>
+      <?php $site_version = "Alpha--V1.0.8"; ?>
+      <p class="text-muted copywrite bg-dark">
+        © <?php echo date("Y"); ?> Mr.Worker. All rights reserved. | Version <?php echo $site_version; ?>
+        <a href="terms-of-service.html">Terms of Service</a> | <a href="privacy-policy.html">Privacy Policy</a>
+      </p>
+
     </div>
   </aside>
 

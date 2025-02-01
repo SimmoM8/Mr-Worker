@@ -78,9 +78,9 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="addEntryBtn">Add</button>
-        <button type="button" class="btn btn-primary" id="updateEntryBtn">Save</button>
+        <button type="button" class="btn btn-secondary main-btn" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
+        <button type="button" class="btn btn-primary main-btn" id="addEntryBtn">Add</button>
+        <button type="button" class="btn btn-primary main-btn" id="updateEntryBtn">Save</button>
       </div>
     </div>
   </div>

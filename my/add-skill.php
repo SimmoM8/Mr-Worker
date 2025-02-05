@@ -5,18 +5,18 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // If the user is not logged in, redirect to the sign-in page
-if ( !isset( $_SESSION[ 'user_id' ] ) ) {
-  header( "Location: ../sign-in.html" );
+if (!isset($_SESSION['user_id'])) {
+  header("Location: ../sign-in.html");
   exit();
 }
 
 require '../db.php'; // Include the PDO connection
 
-$userId = $_SESSION[ 'user_id' ];
-$call = filter_input( INPUT_POST, 'call', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-$input = filter_input( INPUT_POST, 'input', FILTER_SANITIZE_FULL_SPECIAL_CHARS ); // Use 'skill_name' for general skills
-$parentId = filter_input( INPUT_POST, 'parent_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS ); // Use 'parent_id' for work experience or education
-$input2 = filter_input( INPUT_POST, 'input_2', FILTER_SANITIZE_FULL_SPECIAL_CHARS ); // Use 'percentage' for languages
+$userId = $_SESSION['user_id'];
+$call = trim(strip_tags($_POST['call']));
+$input = trim(strip_tags($_POST['input'])); // Use 'skill_name' for general skills
+$parentId = trim(strip_tags($_POST['parent_id'])); // Use 'parent_id' for work experience or education
+$input2 = trim(strip_tags($_POST['input_2'])); // Use 'percentage' for languages
 
 try {
   // Determine the table and columns for the insertion
@@ -25,7 +25,7 @@ try {
   $values = null;
   $params = [];
 
-  switch ( $call ) {
+  switch ($call) {
     case "work_experience":
       $table = "work_experience";
       $columns = "`user_id`, `employerId`, `skill`";
@@ -82,24 +82,23 @@ try {
       break;
   }
 
-  if ( !$table || !$columns || !$values ) {
-    echo json_encode( [ 'status' => 'error', 'message' => 'Invalid call type' ] );
+  if (!$table || !$columns || !$values) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid call type']);
     exit();
   }
 
   // Prepare and execute the SQL statement
   $sql = "INSERT INTO $table ($columns) VALUES ($values)";
-  $stmt = $pdo->prepare( $sql );
-  $stmt->execute( $params );
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute($params);
 
   // Return a JSON response with the inserted ID and skill name
-  echo json_encode( [
+  echo json_encode([
     'status' => 'success',
     'insert_id' => $pdo->lastInsertId(),
     'skill_name' => $input,
-    'percentage' => $params[ ':input_2' ] ?? null,
-  ] );
-} catch ( PDOException $e ) {
-  echo json_encode( [ 'status' => 'error', 'message' => 'Database error: ' . $e->getMessage() ] );
+    'percentage' => $params[':input_2'] ?? null,
+  ]);
+} catch (PDOException $e) {
+  echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
 }
-?>

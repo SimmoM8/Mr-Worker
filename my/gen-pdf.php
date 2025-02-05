@@ -189,17 +189,9 @@ $pageHeight = $pdf->getPageHeight();
 //============================================================+
 // HEADER
 //============================================================+
-error_log( "Before first drawProfile:" );
-error_log( "img_scale = " . $img_scale );
-error_log( "img_pos_x = " . $img_pos_x );
-error_log( "img_pos_y = " . $img_pos_y );
 
 include_once( 'gen-pdf/gen-header.php' );
 
-error_log( "After first drawProfile:" );
-error_log( "img_scale = " . $img_scale );
-error_log( "img_pos_x = " . $img_pos_x );
-error_log( "img_pos_y = " . $img_pos_y );
 //============================================================+
 // SIDE BAR
 //============================================================+
@@ -426,7 +418,8 @@ drawPageNumber( $pdf, $content, $pageWidth, $pageHeight, $style );
 $pdf->SetDisplayMode( 'fullpage' );
 
 //Close and output PDF document
-$pdf->Output( 'example_003.pdf', 'I' );
+$docTitle = "Resume - " . $title . ".pdf";
+$pdf->Output( $docTitle, 'I' );
 
 
 //============================================================+

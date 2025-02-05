@@ -2,46 +2,46 @@
 session_start();
 
 // Set the content type to JSON
-header( 'Content-Type: application/json' );
+header('Content-Type: application/json');
 
 // If user is not logged in, return error response
-if ( !isset( $_SESSION[ 'user_id' ] ) ) {
-  echo json_encode( [ 'error' => 'User is not logged in' ] );
+if (!isset($_SESSION['user_id'])) {
+  echo json_encode(['error' => 'User is not logged in']);
   exit();
 }
 
 require '../db.php'; // Include the PDO connection
 
-$call = filter_input( INPUT_GET, 'call', FILTER_SANITIZE_STRING );
-$valid_calls = [ 'work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses' ];
+$call = trim(strip_tags($_POST['call']));
+$valid_calls = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses'];
 
-if ( !in_array( $call, $valid_calls ) ) {
-  echo json_encode( [ 'error' => 'Invalid call type' ] );
+if (!in_array($call, $valid_calls)) {
+  echo json_encode(['error' => 'Invalid call type']);
   exit();
 }
 
-$userId = $_SESSION[ 'user_id' ];
+$userId = $_SESSION['user_id'];
 $response = [];
 
 try {
-  if ( in_array( $call, [ 'hard_skills', 'soft_skills' ] ) ) {
+  if (in_array($call, ['hard_skills', 'soft_skills'])) {
     // Fetch skills
-    $stmt = $pdo->prepare( "SELECT id, skill FROM `$call` WHERE `user_id` = :user_id ORDER BY `id` ASC" );
-    $stmt->execute( [ ':user_id' => $userId ] );
-    $response = $stmt->fetchAll( PDO::FETCH_ASSOC );
-  } elseif ( $call === 'languages' ) {
+    $stmt = $pdo->prepare("SELECT id, skill FROM `$call` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt->execute([':user_id' => $userId]);
+    $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  } elseif ($call === 'languages') {
     // Fetch languages
-    $stmt = $pdo->prepare( "SELECT id, language, percentage FROM `languages` WHERE `user_id` = :user_id ORDER BY `id` ASC" );
-    $stmt->execute( [ ':user_id' => $userId ] );
-    $response = $stmt->fetchAll( PDO::FETCH_ASSOC );
-  } elseif ( $call === 'licenses' ) {
+    $stmt = $pdo->prepare("SELECT id, language, percentage FROM `languages` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt->execute([':user_id' => $userId]);
+    $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  } elseif ($call === 'licenses') {
     // Fetch licenses
-    $stmt = $pdo->prepare( "SELECT id, license, description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC" );
-    $stmt->execute( [ ':user_id' => $userId ] );
-    $response = $stmt->fetchAll( PDO::FETCH_ASSOC );
+    $stmt = $pdo->prepare("SELECT id, license, description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt->execute([':user_id' => $userId]);
+    $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
   } else {
     // Fetch work experience or education
-    if ( $call === 'work_experience' ) {
+    if ($call === 'work_experience') {
       $mainTable = 'employers';
       $skillsTable = 'work_experience';
       $fields = 'id, job_position, employer, area, country, start_date, end_date, is_current';
@@ -51,21 +51,21 @@ try {
       $fields = 'id, course, school, area, country, start_date, end_date, is_current';
     }
 
-    $stmt = $pdo->prepare( "SELECT $fields FROM `$mainTable` WHERE `user_id` = :user_id ORDER BY `order` ASC" );
-    $stmt->execute( [ ':user_id' => $userId ] );
-    $entries = $stmt->fetchAll( PDO::FETCH_ASSOC );
+    $stmt = $pdo->prepare("SELECT $fields FROM `$mainTable` WHERE `user_id` = :user_id ORDER BY `order` ASC");
+    $stmt->execute([':user_id' => $userId]);
+    $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    foreach ( $entries as $entry ) {
+    foreach ($entries as $entry) {
 
       // Convert dates to Mmm Year format
-      $startDate = $entry[ 'start_date' ] ? ( new DateTime( $entry[ 'start_date' ] ) )->format( 'M Y' ) : '';
-      $endDate = $entry[ 'is_current' ] ? 'Present' : ( $entry[ 'end_date' ] ? ( new DateTime( $entry[ 'end_date' ] ) )->format( 'M Y' ) : '' );
+      $startDate = $entry['start_date'] ? (new DateTime($entry['start_date']))->format('M Y') : '';
+      $endDate = $entry['is_current'] ? 'Present' : ($entry['end_date'] ? (new DateTime($entry['end_date']))->format('M Y') : '');
 
       $entryData = [
-        "id" => $entry[ 'id' ],
-        "title" => $call === 'work_experience' ? $entry[ 'job_position' ] : $entry[ 'course' ],
-        "organization" => $call === 'work_experience' ? $entry[ 'employer' ] : $entry[ 'school' ],
-        "location" => $entry[ 'area' ] . ", " . $entry[ 'country' ],
+        "id" => $entry['id'],
+        "title" => $call === 'work_experience' ? $entry['job_position'] : $entry['course'],
+        "organization" => $call === 'work_experience' ? $entry['employer'] : $entry['school'],
+        "location" => $entry['area'] . ", " . $entry['country'],
         "start_date" => $startDate,
         "end_date" => $endDate,
         "skills" => [],
@@ -73,15 +73,15 @@ try {
 
       // Fetch skills associated with the entry
       $columnId = $call === 'work_experience' ? 'employerId' : 'courseId';
-      $skillsStmt = $pdo->prepare( "SELECT id, skill FROM `$skillsTable` WHERE `$columnId` = :id AND `user_id` = :user_id" );
-      $skillsStmt->execute( [ ':id' => $entry[ 'id' ], ':user_id' => $userId ] );
+      $skillsStmt = $pdo->prepare("SELECT id, skill FROM `$skillsTable` WHERE `$columnId` = :id AND `user_id` = :user_id");
+      $skillsStmt->execute([':id' => $entry['id'], ':user_id' => $userId]);
 
-      $skills = $skillsStmt->fetchAll( PDO::FETCH_ASSOC );
+      $skills = $skillsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-      foreach ( $skills as $skill ) {
-        $entryData[ 'skills' ][] = [
-          "skill_id" => $skill[ 'id' ],
-          "skill_name" => $skill[ 'skill' ],
+      foreach ($skills as $skill) {
+        $entryData['skills'][] = [
+          "skill_id" => $skill['id'],
+          "skill_name" => $skill['skill'],
         ];
       }
 
@@ -89,8 +89,7 @@ try {
     }
   }
 
-  echo json_encode( $response );
-} catch ( PDOException $e ) {
-  echo json_encode( [ 'error' => 'Database error: ' . $e->getMessage() ] );
+  echo json_encode($response);
+} catch (PDOException $e) {
+  echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
 }
-?>

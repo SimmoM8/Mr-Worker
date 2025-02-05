@@ -292,6 +292,10 @@ $(document).ready(function () {
       if (response.error) {
         alert(response.error);
       } else {
+
+            // Decode safely
+            const parser = new DOMParser();
+
         // Populate inputs
         $('#inputFirstName').val(response.first_name);
         $('#inputLastName').val(response.last_name);

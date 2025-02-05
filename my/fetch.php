@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 
 require '../db.php'; // Include the PDO connection
 
-$call = trim(strip_tags($_POST['call']));
+$call = trim(strip_tags($_GET['call']));
 $valid_calls = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses'];
 
 if (!in_array($call, $valid_calls)) {

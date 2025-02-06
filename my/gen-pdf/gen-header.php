@@ -52,7 +52,6 @@ function drawProfile($pdf, $x, $y, $width, $thickness, $imagePath, $style, $scal
 
   // Validate the image path; fallback to default if invalid
   if (!file_exists($imagePath) || !$imageInfo = getimagesize($imagePath)) {
-    error_log("Invalid or missing image. Falling back to default.");
     $imagePath = $defaultImagePath;
     $imageInfo = getimagesize($defaultImagePath);
   }
@@ -81,9 +80,6 @@ function drawProfile($pdf, $x, $y, $width, $thickness, $imagePath, $style, $scal
   $newHeight *= $ms * $scale;
 
   // Center the image in the circle
-  //$imgX = $x + ( $width - $newWidth ) / 2;
-  //$imgY = $y + ( $width - $newHeight ) / 2;
-  // Center the image in the circle
   $posX = ($x + ($width - $newWidth) / 2) + $width * $posXRatio;
   $posY = ($y + ($width - $newHeight) / 2) + $width * $posYRatio;
 
@@ -98,9 +94,6 @@ function drawProfile($pdf, $x, $y, $width, $thickness, $imagePath, $style, $scal
   $pdf->Circle($x + $r, $y + $r, $r, 0, 360, 'CNZ');
   $pdf->Image($imagePath, $posX, $posY, $newWidth, $newHeight);
   $pdf->StopTransform();
-
-  // Debug rendering dimensions
-  error_log("Image rendered at ($posX, $posY) with size $newWidth x $newHeight");
 }
 
 function genTitle($pdf, $x, $y, $width, $title, $rounded, $style)

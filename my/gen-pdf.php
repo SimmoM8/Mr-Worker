@@ -165,8 +165,6 @@ if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
 // add a page
 $pdf->AddPage();
 
-$pdf->AddFont('dinalternateb', '', 'dinalternateb.php');
-
 // Set the style for the resume
 $style = array(
   'font' => 'arial',

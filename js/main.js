@@ -34,13 +34,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("reportForm");
     const reportButton = document.getElementById("reportButton");
 
-    toggleFormVisibility(form);
+    // Toggle form when clicking the report button
+    if (event.target === reportButton) {
+        return toggleFormVisibility(form);
+    }
 
-    // Hide the form if clicking outside of it and not on the button
-    if (!form.contains(event.target) && !reportButton.contains(event.target)) {
-      if (form.classList.contains("visible")) {
+    // Do nothing if clicking inside the form (including the input field)
+    if (form.contains(event.target)) return;
+
+    // Hide the form if clicking outside
+    if (form.classList.contains("visible")) {
         toggleFormVisibility(form);
-      }
     }
   });
 

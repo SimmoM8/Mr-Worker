@@ -33,7 +33,7 @@
         <a class="nav-link text-white" data-page="profile.php"><i class="fa-solid fa-user-tie me-3"></i>Profile</a>
       </li>
       <?php
-      if ($_SESSION['user_id'] == '1') {
+      if ($_SESSION['user_id'] == '14') {
         echo
         "
       <li class='nav-item'>

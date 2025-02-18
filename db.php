@@ -10,6 +10,11 @@ if ($pass === 'empty') {
   $pass = ''; // Convert placeholder to blank password
 }
 
+error_log($host);
+error_log($user);
+error_log($pass);
+error_log($db);
+
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
   PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

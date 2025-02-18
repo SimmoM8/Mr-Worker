@@ -37,12 +37,41 @@ if ( !isset( $_SESSION[ 'user_id' ] ) ) {
 </head>
 <body>
 <?php include 'side_bar.php'; ?>
+
+<!-- TOP BAR -->
+<div id="top-bar" class="d-flex justify-content-between align-items-center px-3 py-2">
+    <!-- Language Selector -->
+    <div class="d-flex align-items-center">
+        <label for="languageSelector" class="me-2">Language:</label>
+        <select id="languageSelector" class="form-select me-3">
+            <option value="1" selected>English</option> <!-- Default -->
+        </select>
+        
+        <!-- Translate Mode Button -->
+        <button id="translateModeToggle" class="btn btn-outline-primary">Enable Translate Mode</button>
+    </div>
+
+    <!-- User Profile Dropdown -->
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle"></i> Profile
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+            <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
+            <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- MAIN CONTENT CONTAINER -->
 <div class="container-fluid" style="overflow-y: auto;">
   <div id="main-content" class="p-3"> 
     <!-- Content will be dynamically loaded here -->
     <p>Loading...</p>
   </div>
 </div>
+
+<!-- Floating Report Button -->
 <div id="reportButton" class="floating-button"> <i class="bi bi-bug"></i> </div>
 <form id="reportForm" class="floating-form form-control hidden">
   <textarea id="reportMessage" name="reportMessage" placeholder="Report any bugs or suggestions..." rows="4"></textarea>

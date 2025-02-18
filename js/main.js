@@ -136,7 +136,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to initialize dynamically loaded content
   function initializeContent() {
-    console.log("Initializing dynamically loaded content...");
 
     // Check if Experience.js is loaded and call init
     if (typeof Experience !== "undefined" && Experience.init) {

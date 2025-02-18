@@ -6,7 +6,7 @@ $pass = getenv('DB_PASS');
 $db = getenv('DB_NAME');
 $charset = 'utf8mb4';
 
-if ($pass === 'empty_password') {
+if ($pass === 'empty') {
   $pass = ''; // Convert placeholder to blank password
 }
 

@@ -23,7 +23,7 @@ $employers = [];
 $sel_employers = explode( ',', $resumes[ 'employers' ] ); // Selected employer IDs for this resume
 
 // Fetch employers from database
-$stmt = $pdo->prepare( "SELECT * FROM `employers` WHERE user_id = :user_id" );
+$stmt = $pdo->prepare( "SELECT * FROM `employers` WHERE user_id = :user_id ORDER BY `order` ASC" );
 $stmt->execute( [ 'user_id' => $user_id ] );
 $all_employers = $stmt->fetchAll( PDO::FETCH_ASSOC );
 
@@ -41,7 +41,7 @@ foreach ( $employers as $employer ) {
   // Iterate over the dot points within the current employer to calculate the total height required
   foreach ( $we as $e ) {
     if ( $e[ 'employerId' ] === $employer[ 'id' ] ) {
-      $requiredHeight += calculateSkillHeight( $pdf, $content[ 'inner_width' ], $e[ 'skill' ], $style[ 'font' ] );
+      $requiredHeight += calculateSkillHeight( $pdf, $content[ 'inner_width' ], $e[ 'skill_lang_1' ], $style[ 'font' ] );
     }
   }
 
@@ -59,14 +59,14 @@ foreach ( $employers as $employer ) {
   // Iterate over the fetched rows within the nested loop
   foreach ( $we as $e ) {
     if ( $e[ 'employerId' ] === $employer[ 'id' ] ) {
-      genPoint( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $content[ 'inner_width' ], $e[ 'skill' ], $style );
+      genPoint( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $content[ 'inner_width' ], $e[ 'skill_lang_1' ], $style );
     }
   }
 
   $next_employer = $pdf->GetY() + 4; // Add bottom margin and set y coord for next employer
 
   // Output employer information (Work experience heading) and dates
-  genExp( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $currentY, $content[ 'inner_width' ], $employer[ 'job_position' ], $employer[ 'employer' ], $employer[ 'area' ] . ", " . $employer[ 'country' ], $employer[ 'start_date' ], $employer[ 'end_date' ], $style );
+  genExp( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $currentY, $content[ 'inner_width' ], $employer[ 'job_position_lang_1' ], $employer[ 'employer' ], $employer[ 'area' ] . ", " . $employer[ 'country' ], $employer[ 'start_date' ], $employer[ 'end_date' ], $style );
   $pdf->setY( $next_employer );
   $currentY = $pdf->GetY();
 }

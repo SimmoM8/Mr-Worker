@@ -26,17 +26,17 @@ $response = [];
 try {
   if (in_array($call, ['hard_skills', 'soft_skills'])) {
     // Fetch skills
-    $stmt = $pdo->prepare("SELECT id, skill FROM `$call` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, skill_lang_1 FROM `$call` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
   } elseif ($call === 'languages') {
     // Fetch languages
-    $stmt = $pdo->prepare("SELECT id, language, percentage FROM `languages` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, language_lang_1, percentage FROM `languages` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
   } elseif ($call === 'licenses') {
     // Fetch licenses
-    $stmt = $pdo->prepare("SELECT id, license, description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, license_lang_1, description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
   } else {
@@ -44,11 +44,11 @@ try {
     if ($call === 'work_experience') {
       $mainTable = 'employers';
       $skillsTable = 'work_experience';
-      $fields = 'id, job_position, employer, area, country, start_date, end_date, is_current';
+      $fields = 'id, job_position_lang_1, employer, area, country, start_date, end_date, is_current';
     } else {
       $mainTable = 'courses';
       $skillsTable = 'education';
-      $fields = 'id, course, school, area, country, start_date, end_date, is_current';
+      $fields = 'id, course_lang_1, school, area, country, start_date, end_date, is_current';
     }
 
     $stmt = $pdo->prepare("SELECT $fields FROM `$mainTable` WHERE `user_id` = :user_id ORDER BY `order` ASC");
@@ -63,7 +63,7 @@ try {
 
       $entryData = [
         "id" => $entry['id'],
-        "title" => $call === 'work_experience' ? $entry['job_position'] : $entry['course'],
+        "title" => $call === 'work_experience' ? $entry['job_position_lang_1'] : $entry['course_lang_1'],
         "organization" => $call === 'work_experience' ? $entry['employer'] : $entry['school'],
         "location" => $entry['area'] . ", " . $entry['country'],
         "start_date" => $startDate,
@@ -73,7 +73,7 @@ try {
 
       // Fetch skills associated with the entry
       $columnId = $call === 'work_experience' ? 'employerId' : 'courseId';
-      $skillsStmt = $pdo->prepare("SELECT id, skill FROM `$skillsTable` WHERE `$columnId` = :id AND `user_id` = :user_id");
+      $skillsStmt = $pdo->prepare("SELECT id, skill_lang_1 FROM `$skillsTable` WHERE `$columnId` = :id AND `user_id` = :user_id");
       $skillsStmt->execute([':id' => $entry['id'], ':user_id' => $userId]);
 
       $skills = $skillsStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -81,7 +81,7 @@ try {
       foreach ($skills as $skill) {
         $entryData['skills'][] = [
           "skill_id" => $skill['id'],
-          "skill_name" => $skill['skill'],
+          "skill_name" => $skill['skill_lang_1'],
         ];
       }
 

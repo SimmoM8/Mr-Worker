@@ -7,7 +7,7 @@ $languages = array();
 $sel_lang = explode( ',', $resumes[ 'languages' ] ); // The id's of the dot points selected for this resume
 
 // Fetch all languages from the database
-$stmt = $pdo->prepare( "SELECT id, language, percentage FROM `languages` WHERE user_id = :user_id" );
+$stmt = $pdo->prepare( "SELECT id, language_lang_1, percentage FROM `languages` WHERE user_id = :user_id" );
 $stmt->execute( [ 'user_id' => $user_id ] );
 $all_languages = $stmt->fetchAll( PDO::FETCH_ASSOC );
 
@@ -15,7 +15,7 @@ $all_languages = $stmt->fetchAll( PDO::FETCH_ASSOC );
 foreach ( $all_languages as $row ) {
   if ( in_array( $row[ 'id' ], $sel_lang ) ) {
     $languages[] = [
-      'language' => $row[ 'language' ],
+      'language' => $row[ 'language_lang_1' ],
       'percentage' => $row[ 'percentage' ]
     ];
   }

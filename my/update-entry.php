@@ -58,7 +58,7 @@ if (isset($_POST['id']) && isset($_POST['call'])) {
       // Prepare the SQL query
       $sql = "UPDATE `$table` SET 
                     `$titleField[0]` = :title1, 
-                    `$titleField[1]` = :title2, 
+                    `$titleField[1]_lang_1` = :title2, 
                     `area` = :city, 
                     `country` = :country, 
                     `start_date` = :start_date, 

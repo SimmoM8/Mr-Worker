@@ -1,8 +1,5 @@
 <?php
 session_start();
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 // If the user is not logged in, redirect to the sign-in page
 if (!isset($_SESSION['user_id'])) {
@@ -28,7 +25,7 @@ try {
   switch ($call) {
     case "work_experience":
       $table = "work_experience";
-      $columns = "`user_id`, `employerId`, `skill`";
+      $columns = "`user_id`, `employerId`, `skill_lang_1`";
       $values = ":user_id, :parent_id, :input";
       $params = [
         ':user_id' => $userId,
@@ -39,7 +36,7 @@ try {
 
     case "education":
       $table = "education";
-      $columns = "`user_id`, `courseId`, `skill`";
+      $columns = "`user_id`, `courseId`, `skill_lang_1`";
       $values = ":user_id, :parent_id, :input";
       $params = [
         ':user_id' => $userId,
@@ -50,7 +47,7 @@ try {
 
     case "languages":
       $table = "languages";
-      $columns = "`user_id`, `language`, `percentage`";
+      $columns = "`user_id`, `language_lang_1`, `percentage`";
       $values = ":user_id, :input, :input_2";
       $params = [
         ':user_id' => $userId,
@@ -61,7 +58,7 @@ try {
 
     case "licenses":
       $table = "licenses";
-      $columns = "`user_id`, `license`, `description`";
+      $columns = "`user_id`, `license_lang_1`, `description`";
       $values = ":user_id, :input, :input_2";
       $params = [
         ':user_id' => $userId,
@@ -73,7 +70,7 @@ try {
     default:
       // Assume 'hard_skills' or 'soft_skills' match their table names
       $table = $call;
-      $columns = "`user_id`, `skill`";
+      $columns = "`user_id`, `skill_lang_1`";
       $values = ":user_id, :input";
       $params = [
         ':user_id' => $userId,

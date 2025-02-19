@@ -13,8 +13,8 @@ if (!isset($_SESSION['user_id'])) {
 
 // Check if the required parameters are provided
 if (isset($_GET['id']) && isset($_GET['call'])) {
-  $experienceId = trim(strip_tags($_POST['id']));
-  $call = trim(strip_tags($_POST['call']));
+  $experienceId = trim(strip_tags($_GET['id']));
+  $call = trim(strip_tags($_GET['call']));
 
   if (!$experienceId || !$call) {
     ob_end_clean();
@@ -27,12 +27,12 @@ if (isset($_GET['id']) && isset($_GET['call'])) {
   try {
     // Prepare the SQL query based on the type of experience
     if ($call === 'work_experience') {
-      $sql = "SELECT `id`, `employer`, `job_position`, `area` AS `city`, `country`, 
+      $sql = "SELECT `id`, `employer`, `job_position_lang_1`, `area` AS `city`, `country`, 
                            `start_date`, `end_date`, `is_current`
                     FROM `employers`
                     WHERE `id` = :id";
     } elseif ($call === 'education') {
-      $sql = "SELECT `id`, `school`, `course`, `area` AS `city`, `country`, 
+      $sql = "SELECT `id`, `school`, `course_lang_1`, `area` AS `city`, `country`, 
                            `start_date`, `end_date`, `is_current`
                     FROM `courses`
                     WHERE `id` = :id";
@@ -87,4 +87,5 @@ if (isset($_GET['id']) && isset($_GET['call'])) {
 } else {
   ob_end_clean();
   echo json_encode(['error' => 'Missing required fields']);
+  error_log('Error: Missing required fields');
 }

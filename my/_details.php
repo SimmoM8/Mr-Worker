@@ -42,7 +42,7 @@ echo "$var: $value;\n";
     <h4>Theme Gradient</h4>
     <p>These will be the theme colours for this resume. Colour 1 is the left colour of the gradient, and colour 2 is the right.</p>
     <div class="form-colors row">
-      <?php include_once('template-color-inputs.php'); ?>
+      <?php include_once 'template-color-inputs.php'; ?>
     </div>
   </div>
   <input type="hidden" name="submit-details" id="submit-details-hidden" value="false">

@@ -25,12 +25,10 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       // Extract data for the template
       $id = htmlspecialchars($row['id']);
-      $name = htmlspecialchars($row['job_position']);
+      $name = htmlspecialchars($row['job_position_lang_1']);
       $last_updated = htmlspecialchars($row['last_updated']);
       $color1 = $row['grad_color_1'];
       $color2 = $row['grad_color_2'];
-      error_log($color1);
-      error_log($color2);
 
       // Use the template file to render the card
       ob_start();

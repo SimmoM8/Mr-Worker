@@ -46,7 +46,7 @@ try {
   }
 
   // Populate session variables
-  $_SESSION[ 'job_position' ] = $resumes[ 'job_position' ];
+  $_SESSION[ 'job_position' ] = $resumes[ 'job_position_lang_1' ];
   $_SESSION[ 'grad_color_1' ] = $resumes[ 'grad_color_1' ];
   $_SESSION[ 'grad_color_2' ] = $resumes[ 'grad_color_2' ];
   $_SESSION[ 'background_color' ] = $resumes[ 'background_color' ];

@@ -296,6 +296,9 @@ $(document).ready(function () {
             // Decode safely
             const parser = new DOMParser();
 
+        console.log(response);
+        console.log(response.country_lang_1);
+
         // Populate inputs
         $('#inputFirstName').val(response.first_name);
         $('#inputLastName').val(response.last_name);
@@ -304,14 +307,14 @@ $(document).ready(function () {
         $('#inputStreet').val(response.street);
         $('#inputTown').val(response.town);
         $('#inputPostCode').val(response.post_code);
-        $('#inputCountry').val(response.country);
-        $('#inputAboutMe').val(response.about_me);
+        $('#inputCountry').val(response.country_lang_1);
+        $('#inputAboutMe').val(response.about_me_lang_1);
 
         // Populate display values
         $('#displayName').text(`${response.first_name} ${response.last_name}`);
         $('#displayMobile').text(`${response.country_code} ${response.mobile}`);
-        $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country}`);
-        $('#displayAbout').text(response.about_me);
+        $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country_lang_1}`);
+        $('#displayAbout').text(response.about_me_lang_1);
       }
     },
     error: function () {

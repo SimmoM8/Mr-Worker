@@ -36,7 +36,7 @@ if (isset($_POST['call'])) {
 
       // Prepare the SQL statement
       $stmt = $pdo->prepare(
-        "INSERT INTO `employers` (`user_id`, `employer`, `job_position`, `area`, `country`, `start_date`, `end_date`, `is_current`) 
+        "INSERT INTO `employers` (`user_id`, `employer`, `job_position_lang_1`, `area`, `country`, `start_date`, `end_date`, `is_current`) 
                  VALUES (:user_id, :employer, :job_position, :city, :country, :start_date, :end_date, :is_current)"
       );
 
@@ -63,7 +63,7 @@ if (isset($_POST['call'])) {
 
       // Prepare the SQL statement
       $stmt = $pdo->prepare(
-        "INSERT INTO `courses` (`user_id`, `school`, `course`, `area`, `country`, `start_date`, `end_date`, `is_current`) 
+        "INSERT INTO `courses` (`user_id`, `school`, `course_lang_1`, `area`, `country`, `start_date`, `end_date`, `is_current`) 
                  VALUES (:user_id, :school, :course, :city, :country, :start_date, :end_date, :is_current)"
       );
 

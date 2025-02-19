@@ -17,7 +17,6 @@
   <?php include 'modal-experience.php'; ?>
 </section>
 <script>
-    console.log("Inline script in work_experience.php executed");
     if (typeof Experience !== "undefined" && Experience.init) {
       Experience.init(); // Initialize Experience.js for this page
     }

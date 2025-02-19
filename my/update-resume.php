@@ -15,7 +15,7 @@ try {
 
   // Prepare an associative array for update fields
   $fields = [
-    'job_position' => $_SESSION[ 'job_position' ],
+    'job_position_lang_1' => $_SESSION[ 'job_position' ],
     'grad_color_1' => $_SESSION[ 'grad_color_1' ],
     'grad_color_2' => $_SESSION[ 'grad_color_2' ],
     'background_color' => $_SESSION[ 'background_color' ],

@@ -74,7 +74,7 @@ foreach ( $courses as $course ) {
   $next_course = $pdf->GetY() + 4; // Add bottom margin and set y coord for next employer
 
   // Output employer information (Work experience heading) and dates
-  genExp( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $currentY, $content[ 'inner_width' ], $course[ 'course_lang_1' ], $course[ 'school' ], $course[ 'area' ] . ", " . $course[ 'country' ], $course[ 'start_date' ], $course[ 'end_date' ], $style );
+  genExp( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $currentY, $content[ 'inner_width' ], $course[ 'course_lang_1' ], $course[ 'school' ], $course[ 'area' ] . ", " . $course[ 'country_lang_1' ], $course[ 'start_date' ], $course[ 'end_date' ], $style );
   $pdf->setY( $next_course );
   $currentY = $pdf->GetY();
 }

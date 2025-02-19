@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
       }
 
-      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_lang_1` = :license, `description` = :description WHERE `id` = :id");
+      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_lang_1` = :license, `description_lang_1` = :description WHERE `id` = :id");
       $stmt->execute([
         ':license' => $license,
         ':description' => $description,

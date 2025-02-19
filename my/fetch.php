@@ -36,7 +36,7 @@ try {
     $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
   } elseif ($call === 'licenses') {
     // Fetch licenses
-    $stmt = $pdo->prepare("SELECT id, license_lang_1, description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, license_lang_1, description_lang_1 FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
   } else {
@@ -44,11 +44,11 @@ try {
     if ($call === 'work_experience') {
       $mainTable = 'employers';
       $skillsTable = 'work_experience';
-      $fields = 'id, job_position_lang_1, employer, area, country, start_date, end_date, is_current';
+      $fields = 'id, job_position_lang_1, employer, area, country_lang_1, start_date, end_date, is_current';
     } else {
       $mainTable = 'courses';
       $skillsTable = 'education';
-      $fields = 'id, course_lang_1, school, area, country, start_date, end_date, is_current';
+      $fields = 'id, course_lang_1, school, area, country_lang_1, start_date, end_date, is_current';
     }
 
     $stmt = $pdo->prepare("SELECT $fields FROM `$mainTable` WHERE `user_id` = :user_id ORDER BY `order` ASC");
@@ -65,7 +65,7 @@ try {
         "id" => $entry['id'],
         "title" => $call === 'work_experience' ? $entry['job_position_lang_1'] : $entry['course_lang_1'],
         "organization" => $call === 'work_experience' ? $entry['employer'] : $entry['school'],
-        "location" => $entry['area'] . ", " . $entry['country'],
+        "location" => $entry['area'] . ", " . $entry['country_lang_1'],
         "start_date" => $startDate,
         "end_date" => $endDate,
         "skills" => [],

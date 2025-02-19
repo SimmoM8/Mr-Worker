@@ -60,7 +60,7 @@ if (isset($_POST['id']) && isset($_POST['call'])) {
                     `$titleField[0]` = :title1, 
                     `$titleField[1]_lang_1` = :title2, 
                     `area` = :city, 
-                    `country` = :country, 
+                    `country_lang_1` = :country, 
                     `start_date` = :start_date, 
                     `end_date` = :end_date, 
                     `is_current` = :is_current 

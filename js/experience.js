@@ -48,8 +48,8 @@ const Experience = {
     url,
     type,
     data = {},
-    onSuccess = () => {},
-    onError = () => {}
+    onSuccess = () => { },
+    onError = () => { }
   ) {
     $.ajax({
       url: url,
@@ -107,55 +107,45 @@ const Experience = {
   // Render the experience card HTML
   renderExperienceCard: function (experience, call) {
     return `
-    <div class="experience_card-container row" id="experience_card_${
-      experience.id
-    }">
+    <div class="experience_card-container row" id="experience_card_${experience.id
+      }">
       <div class="time-plot col-1">
-        <p class="time">${
-          experience.end_date
-        }<br> <i class="fas fa-arrow-up"></i><br>${experience.start_date}</p>
+        <p class="time">${experience.end_date
+      }<br> <i class="fas fa-arrow-up"></i><br>${experience.start_date}</p>
       </div>
       <div class="card experience_card col">
-        <div class="experience-header card-colored" id="experience_header_${
-          experience.id
-        }">
+        <div class="experience-header card-colored" id="experience_header_${experience.id
+      }">
           <h3>${experience.title}</h3>
-          <p class="sub-heading">${experience.organization}  ●  ${
-      experience.location
-    }</p>
+          <p class="sub-heading">${experience.organization}  ●  ${experience.location
+      }</p>
           <div class="menu-icon-container" id="menu_container_${experience.id}">
-            <div class="action-buttons slide-in" id="action_buttons_${
-              experience.id
-            }">
-              <button class="menu-btn btn-outline-primary edit-experience" data-id="${
-                experience.id
-              }" data-call="${call}">
+            <div class="action-buttons slide-in" id="action_buttons_${experience.id
+      }">
+              <button class="menu-btn btn-outline-primary edit-experience" data-id="${experience.id
+      }" data-call="${call}">
                 <i class="fas fa-pencil-alt"></i> Edit
               </button>
-              <button class="menu-btn btn-outline-danger delete-experience" data-id="${
-                experience.id
-              }" data-call="${call}">
+              <button class="menu-btn btn-outline-danger delete-experience" data-id="${experience.id
+      }" data-call="${call}">
                 <i class="fas fa-trash-alt"></i> Delete
               </button>
             </div>
-            <button class="menu-btn btn-link menu-toggle" style="" type="button" id="menu_${
-              experience.id
-            }">
+            <button class="menu-btn btn-link menu-toggle" style="" type="button" id="menu_${experience.id
+      }">
               <i class="fas fa-ellipsis-h"></i>
             </button>
           </div>
         </div>
-        <div class="collapsible-content" id="content_${
-          experience.id
-        }" style="display: none;">
+        <div class="collapsible-content" id="content_${experience.id
+      }" style="display: none;">
           <h4>Demonstrated Skills</h4>
           <div class="skills-list-wrapper">
-            <ul class="skills-list list-group list-group-flush" id="skills_list_${
-              experience.id
-            }">
+            <ul class="skills-list list-group list-group-flush" id="skills_list_${experience.id
+      }">
               ${experience.skills
-                .map(
-                  (skill) => `
+        .map(
+          (skill) => `
                 <li class="skill-item list-group-item" data-id="${skill.skill_id}" data-employer="${experience.id}" data-call="${call}">
                   <div class="d-flex">
 					  <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.skill_id}">
@@ -164,19 +154,16 @@ const Experience = {
                     <span class="point-text">${skill.skill_name}</span>
                   </div>
                 </li>`
-                )
-                .join("")}
+        )
+        .join("")}
             </ul>
           </div>
           <div class="input-group mb-3">
-			<input type="text" class="form-control" id="input_experience_${
-        experience.id
+			<input type="text" class="form-control" id="input_experience_${experience.id
       }" placeholder="Type your skill here">
-            <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${
-              experience.id
-            }" onClick="Experience.addPoint('${call}', '${
-      experience.id
-    }')"><i class="fas fa-square-plus"></i></button>
+            <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${experience.id
+      }" onClick="Experience.addPoint('${call}', '${experience.id
+      }')"><i class="fas fa-square-plus"></i></button>
           </div>
         </div>
       </div>
@@ -432,7 +419,7 @@ const Experience = {
     } else {
       Experience.currentEditId = experience.id; // Track the ID being edited
       $("#city").val(experience.city);
-      $("#country").val(experience.country);
+      $("#country").val(experience.country_lang_1);
       $("#updateEntryBtn").prop("disabled", false).show();
       $("#addEntryBtn").prop("disabled", true).hide();
       Experience.populateDateDropdowns(true, experience);

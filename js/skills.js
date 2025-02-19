@@ -20,9 +20,9 @@ function fetchSkills(categories) {
         skillContainer.append(
           category === "licenses"
             ? createLicenseItem(skill)
-          : category === "languages"
-            ? createLanguageSkill(skill)
-            : createSkillItem(skill)
+            : category === "languages"
+              ? createLanguageSkill(skill)
+              : createSkillItem(skill)
         );
       });
     });
@@ -241,7 +241,7 @@ function createLicenseItem(license) {
         <i class="fas fa-trash-alt"></i>
       </button>
       <span class="license-name">${license.license_lang_1}</span>
-      <p class="license-description">${license.description}</p>
+      <p class="license-description">${license.description_lang_1}</p>
       <button class="btn btn-sm btn-secondary edit-license">Edit</button>
     </li>
   `;
@@ -294,7 +294,7 @@ function handleLicenseEdit() {
     if (e.type === 'blur' || (e.type === 'keypress' && e.which === 13)) {
       const newName = licenseItem.find('.license-name-input').val().trim();
       const newDescription = licenseItem.find('.license-description-input').val().trim();
-		
+
       if (newName && newDescription) {
         ajaxRequest(
           'update-point.php',

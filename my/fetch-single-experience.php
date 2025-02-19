@@ -27,12 +27,12 @@ if (isset($_GET['id']) && isset($_GET['call'])) {
   try {
     // Prepare the SQL query based on the type of experience
     if ($call === 'work_experience') {
-      $sql = "SELECT `id`, `employer`, `job_position_lang_1`, `area` AS `city`, `country`, 
+      $sql = "SELECT `id`, `employer`, `job_position_lang_1`, `area` AS `city`, `country_lang_1`, 
                            `start_date`, `end_date`, `is_current`
                     FROM `employers`
                     WHERE `id` = :id";
     } elseif ($call === 'education') {
-      $sql = "SELECT `id`, `school`, `course_lang_1`, `area` AS `city`, `country`, 
+      $sql = "SELECT `id`, `school`, `course_lang_1`, `area` AS `city`, `country_lang_1`, 
                            `start_date`, `end_date`, `is_current`
                     FROM `courses`
                     WHERE `id` = :id";

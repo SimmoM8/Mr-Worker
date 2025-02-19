@@ -58,7 +58,7 @@ try {
 
     case "licenses":
       $table = "licenses";
-      $columns = "`user_id`, `license_lang_1`, `description`";
+      $columns = "`user_id`, `license_lang_1`, `description_lang_1`";
       $values = ":user_id, :input, :input_2";
       $params = [
         ':user_id' => $userId,

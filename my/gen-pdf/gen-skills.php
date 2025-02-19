@@ -14,26 +14,26 @@ $sel_hs = explode( ',', $resumes[ 'hard_skills' ] ); // The id's of the hard ski
 $sel_ss = explode( ',', $resumes[ 'soft_skills' ] ); // The id's of the soft skills selected for this resume*/
 
 // Fetch all hard skills from the database
-$stmt = $pdo->prepare("SELECT id, skill FROM `hard_skills` WHERE user_id = :user_id");
+$stmt = $pdo->prepare("SELECT id, skill_lang_1 FROM `hard_skills` WHERE user_id = :user_id");
 $stmt->execute(['user_id' => $user_id]);
 $all_hskills = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Add selected hard skills to the skills array
 foreach ($all_hskills as $hskill) {
     if (in_array($hskill['id'], $sel_hs)) {
-        $skills[] = $hskill['skill'];
+        $skills[] = $hskill['skill_lang_1'];
     }
 }
 
 // Fetch all soft skills from the database
-$stmt = $pdo->prepare("SELECT id, skill FROM `soft_skills` WHERE user_id = :user_id");
+$stmt = $pdo->prepare("SELECT id, skill_lang_1 FROM `soft_skills` WHERE user_id = :user_id");
 $stmt->execute(['user_id' => $user_id]);
 $all_sskills = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Add selected soft skills to the skills array
 foreach ($all_sskills as $sskill) {
     if (in_array($sskill['id'], $sel_ss)) {
-        $skills[] = $sskill['skill'];
+        $skills[] = $sskill['skill_lang_1'];
     }
 }
 

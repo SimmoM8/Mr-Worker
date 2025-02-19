@@ -4,7 +4,7 @@ $remainingSpace = $pageHeight - $currentY - $style[ 'bottom_margin' ];
 
 // Check if there is enough space on the current page
 if ( $requiredHeight > $remainingSpace ) {
-  newPage( $pdf, $side_bar, $content, $profile_info, $headings, $language, $style, $profile_pic_path );
+  newPage( $pdf, $side_bar, $content, $profile_info, $headings, $language, $style, $profile_pic_path, $img_scale, $img_pos_x, $img_pos_y);
 }
 $currentY = $pdf->GetY();
 
@@ -32,7 +32,7 @@ $courses = [];
 $sel_courses = explode( ',', $resumes[ 'courses' ] ); // Selected course IDs for this resume
 
 // Fetch all courses from the database
-$stmt = $pdo->prepare( "SELECT * FROM `courses` WHERE user_id = :user_id" );
+$stmt = $pdo->prepare( "SELECT * FROM `courses` WHERE user_id = :user_id ORDER BY `order` ASC" );
 $stmt->execute( [ 'user_id' => $user_id ] );
 $all_courses = $stmt->fetchAll( PDO::FETCH_ASSOC );
 
@@ -50,7 +50,7 @@ foreach ( $courses as $course ) {
   // Iterate over the dot points within the current employer to calculate the total height required
   foreach ( $education as $e ) {
     if ( $e[ 'courseId' ] === $course[ 'id' ] ) {
-      $requiredHeight += calculateSkillHeight( $pdf, $content[ 'inner_width' ], $e[ 'skill' ], $style[ 'font' ] );
+      $requiredHeight += calculateSkillHeight( $pdf, $content[ 'inner_width' ], $e[ 'skill_lang_1' ], $style[ 'font' ] );
     }
   }
 
@@ -67,14 +67,14 @@ foreach ( $courses as $course ) {
   // Iterate over the fetched rows within the nested loop
   foreach ( $education as $e ) {
     if ( $e[ 'courseId' ] === $course[ 'id' ] ) {
-      genPoint( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $content[ 'inner_width' ], $e[ 'skill' ], $style );
+      genPoint( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $content[ 'inner_width' ], $e[ 'skill_lang_1' ], $style );
     }
   }
 
   $next_course = $pdf->GetY() + 4; // Add bottom margin and set y coord for next employer
 
   // Output employer information (Work experience heading) and dates
-  genExp( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $currentY, $content[ 'inner_width' ], $course[ 'course' ], $course[ 'school' ], $course[ 'area' ] . ", " . $course[ 'country' ], $course[ 'start_date' ], $course[ 'end_date' ], $style );
+  genExp( $pdf, $content[ 'x' ] + $content[ 'margin' ][ 3 ], $currentY, $content[ 'inner_width' ], $course[ 'course_lang_1' ], $course[ 'school' ], $course[ 'area' ] . ", " . $course[ 'country_lang_1' ], $course[ 'start_date' ], $course[ 'end_date' ], $style );
   $pdf->setY( $next_course );
   $currentY = $pdf->GetY();
 }

@@ -30,7 +30,7 @@ try {
   // Prepare the SQL statement
   $stmt = $pdo->prepare(
     "INSERT INTO resumes 
-        (user_id, job_position, grad_color_1, grad_color_2, background_color, bubble_color, hard_skills, soft_skills, languages, licenses, employers, work_experience, courses, education, last_updated) 
+        (user_id, job_position_lang_1, grad_color_1, grad_color_2, background_color, bubble_color, hard_skills, soft_skills, languages, licenses, employers, work_experience, courses, education, last_updated) 
         VALUES 
         (:user_id, :job_position, :grad_color_1, :grad_color_2, :background_color, :bubble_color, :hard_skills, :soft_skills, :languages, :licenses, :employers, :work_experience, :courses, :education, NOW())"
   );

@@ -102,7 +102,6 @@ const Resumes = {
   },
 
   activateTab: function (tabName) {
-    console.log(`Activating tab: ${tabName}`);
     $(`#modal_resume .nav-link`).removeClass('active');
     $(`#modal_resume .nav-link[data-current="${tabName}"]`)
       .addClass('active')
@@ -138,7 +137,6 @@ const Resumes = {
 
   // Fetch and generate skills and experience for adding or editing a resume
   fetchAndGenerateList: function (types) {
-    console.log(`Fetching data for types: ${types}`); // Debugging
 
     // First, fetch session data for selected IDs
     $.ajax({
@@ -176,7 +174,7 @@ const Resumes = {
                   container.append(`
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="${t}_${item.id}" value="${item.id}" name="${t}[]" ${isChecked}>
-                    <label class="form-check-label" for="${t}_${item.id}">${item.language || item.license || item.skill}</label>
+                    <label class="form-check-label" for="${t}_${item.id}">${item.language_lang_1 || item.license_lang_1 || item.skill_lang_1}</label>
                   </div>
                 `);
                 } else if (['work_experience', 'education'].includes(t)) {
@@ -202,7 +200,7 @@ const Resumes = {
                       )
                       .join('');
                   } else {
-                    skillsHtml = `<p>No skill points to select</p>`;
+                    skillsHtml = `<p>No skill points to select. You can add skill points in the Skills tab</p>`;
                   }
 
                   container.append(`
@@ -259,7 +257,6 @@ const Resumes = {
 
   updateSession: function (tabName, callback) {
     const formData = $(`#${tabName}-form`).serialize();
-    console.log(`form DATA: ${formData}`);
     Resumes.handleAjax('update_session.php', formData, 'POST', callback);
   },
 
@@ -305,8 +302,6 @@ const Resumes = {
       return;
     }
 
-    console.log(`Switching from ${Resumes.currentTab} to ${nextTabName}`);
-
     // Update session with current tab's data
     Resumes.updateSession(Resumes.currentTab, () => {
       Resumes.activateTab(nextTabName); // Switch to the next tab
@@ -317,7 +312,6 @@ const Resumes = {
   getNextTabName: function (currentTab) {
     const tabsOrder = ['details', 'skills', 'work_experience', 'education'];
     const currentIndex = tabsOrder.indexOf(currentTab);
-    console.log(`current index: ${currentIndex}`);
     return currentIndex !== -1 && currentIndex < tabsOrder.length - 1
       ? tabsOrder[currentIndex + 1]
       : null;

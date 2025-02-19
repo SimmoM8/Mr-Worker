@@ -68,7 +68,6 @@ elseif ( isset( $_POST[ 'submit-details' ] ) ) {
 else {
   echo 'HELP!';
 }
-error_log( "Updated SESSION DATA: " . print_r( $_SESSION, true ) );
 
 function redirect( $url, $statusCode = 303 ) {
   header( 'Location: ' . $url );

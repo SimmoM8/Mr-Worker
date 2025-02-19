@@ -20,9 +20,9 @@ function fetchSkills(categories) {
         skillContainer.append(
           category === "licenses"
             ? createLicenseItem(skill)
-          : category === "languages"
-            ? createLanguageSkill(skill)
-            : createSkillItem(skill)
+            : category === "languages"
+              ? createLanguageSkill(skill)
+              : createSkillItem(skill)
         );
       });
     });
@@ -59,7 +59,7 @@ function createLanguageSkill(skill) {
       <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
         <i class="fas fa-square-minus"></i>
       </button>
-      <span>${skill.language} - <span class="percentage-display">${skill.percentage}</span>%</span>
+      <span>${skill.language_lang_1} - <span class="percentage-display">${skill.percentage}</span>%</span>
       <div class="progress mt-2 position-relative">
         <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%;" aria-valuenow="${skill.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
         <input type="range" class="form-range language-slider position-absolute w-100" min="0" max="100" value="${skill.percentage}" style="opacity: 0; transition: opacity 0.2s;">
@@ -79,7 +79,7 @@ function createSkillItem(skill) {
       <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
         <i class="fas fa-square-minus"></i>
       </button>
-      <span class="point-text">${skill.skill}</span>
+      <span class="point-text">${skill.skill_lang_1}</span>
     </li>
   `;
 }
@@ -240,8 +240,8 @@ function createLicenseItem(license) {
       <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
         <i class="fas fa-trash-alt"></i>
       </button>
-      <span class="license-name">${license.license}</span>
-      <p class="license-description">${license.description}</p>
+      <span class="license-name">${license.license_lang_1}</span>
+      <p class="license-description">${license.description_lang_1}</p>
       <button class="btn btn-sm btn-secondary edit-license">Edit</button>
     </li>
   `;
@@ -294,7 +294,7 @@ function handleLicenseEdit() {
     if (e.type === 'blur' || (e.type === 'keypress' && e.which === 13)) {
       const newName = licenseItem.find('.license-name-input').val().trim();
       const newDescription = licenseItem.find('.license-description-input').val().trim();
-		
+
       if (newName && newDescription) {
         ajaxRequest(
           'update-point.php',

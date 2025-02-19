@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
       }
 
-      $stmt = $pdo->prepare("UPDATE `licenses` SET `license` = :license, `description` = :description WHERE `id` = :id");
+      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_lang_1` = :license, `description_lang_1` = :description WHERE `id` = :id");
       $stmt->execute([
         ':license' => $license,
         ':description' => $description,
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
       }
       error_log('call: ' . $call);
-      $stmt = $pdo->prepare("UPDATE `$call` SET `skill` = :skill WHERE `id` = :id");
+      $stmt = $pdo->prepare("UPDATE `$call` SET `skill_lang_1` = :skill WHERE `id` = :id");
       $stmt->execute([':skill' => $editedPoint, ':id' => $pointId]);
     }
 

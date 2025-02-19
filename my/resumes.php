@@ -59,7 +59,6 @@ Ideas:<br>
   </div>
 </div>
 <script>
-  console.log("Inline script in resumes.php executed");
   if (typeof Resumes !== "undefined" && Resumes.init) {
     Resumes.init(); // Initialize Experience.js for this page
   }

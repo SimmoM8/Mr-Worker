@@ -7,7 +7,7 @@ $licenses = array();
 $sel_licenses = explode( ',', $resumes[ 'licenses' ] ); // The id's of the licenses selected for this resume
 
 // Fetch all licenses from the database
-$stmt = $pdo->prepare( "SELECT id, license, description FROM `licenses` WHERE user_id = :user_id" );
+$stmt = $pdo->prepare( "SELECT id, license_lang_1, description_lang_1 FROM `licenses` WHERE user_id = :user_id" );
 $stmt->execute( [ 'user_id' => $user_id ] );
 $all_licenses = $stmt->fetchAll( PDO::FETCH_ASSOC );
 
@@ -15,8 +15,8 @@ $all_licenses = $stmt->fetchAll( PDO::FETCH_ASSOC );
 foreach ( $all_licenses as $row ) {
   if ( in_array( $row[ 'id' ], $sel_licenses ) ) {
     $licenses[] = [
-      'type' => $row[ 'license' ],
-      'license' => $row[ 'description' ]
+      'type' => $row[ 'license_lang_1' ],
+      'license' => $row[ 'description_lang_1' ]
     ];
   }
 }

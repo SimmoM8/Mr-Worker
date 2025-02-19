@@ -26,7 +26,7 @@ if (!$resumes) {
 }
 
 $id = $resumes['id'];
-$title = $resumes['job_position'];
+$title = $resumes['job_position_lang_1'];
 $language = 'en';
 $color1 = hexToRgb($resumes['grad_color_1']);
 $color2 = hexToRgb($resumes['grad_color_2']);
@@ -68,7 +68,7 @@ $name = $first_name . " " . $last_name;
 $mobile = "(+" . $profile['country_code'] . ") " . $profile['mobile'];
 $address = $profile['street'] . "\n" . $profile['town'] . " " . $profile['post_code'];
 $email = $profile['email'];
-$about_me = $profile['about_me'];
+$about_me = $profile['about_me_lang_1'];
 $img_scale = $profile['img_scale'];
 $img_pos_x = $profile['img_pos_x'];
 $img_pos_y = $profile['img_pos_y'];

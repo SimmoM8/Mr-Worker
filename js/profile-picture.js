@@ -9,7 +9,6 @@
  */
 
 function renderProfilePicture(containerSelector, callback, altPath, defaultImg = 'uploads/profile_default.jpeg') {
-  console.log("rendering image");
   const container = document.querySelector(containerSelector);
 
   if (!container) {
@@ -23,13 +22,12 @@ function renderProfilePicture(containerSelector, callback, altPath, defaultImg =
     console.error('Container width is 0. Ensure the container is visible before calling this function.');
     return;
   }
-  console.log("fething image data");
+
   $.ajax({
     url: 'fetch_image_data.php',
     type: 'GET',
     dataType: 'json',
     success: function (response) {
-      console.log(`fetch response: ${response}`);
       if (response.error) {
         console.error(response.error);
         displayError(container, 'Failed to load profile picture.');
@@ -39,7 +37,6 @@ function renderProfilePicture(containerSelector, callback, altPath, defaultImg =
 
       const imgPath = `${sanitizeURL(altPath || response.img_path || defaultImg)}?t=${new Date().getTime()}`;
 
-      console.log(`img path: ${imgPath}`);
       let scale, posXRatio, posYRatio;
       if (altPath) {
         scale = 1;

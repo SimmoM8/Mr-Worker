@@ -40,8 +40,8 @@ try {
                 street = :street, 
                 town = :town, 
                 post_code = :post_code, 
-                country = :country, 
-                about_me = :about_me 
+                country_lang_1 = :country, 
+                about_me_lang_1 = :about_me 
             WHERE id = :user_id";
 
   $stmt = $pdo->prepare($sql);

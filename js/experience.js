@@ -78,7 +78,7 @@ const Experience = {
         // Re-inject the "Add Experience" button
         const addExperienceHTML = `
         <div class="experience_card-container row" id="card-new_work_experience">
-          <div class="time-plot col-1">
+          <div class="time-plot">
           </div>
           <div class="col text-center experience_card col">
               <div class="card-body card-placeholder">
@@ -109,7 +109,7 @@ const Experience = {
     return `
     <div class="experience_card-container row" id="experience_card_${experience.id
       }">
-      <div class="time-plot col-1">
+      <div class="time-plot">
         <p class="time">${experience.end_date
       }<br> <i class="fas fa-arrow-up"></i><br>${experience.start_date}</p>
       </div>

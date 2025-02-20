@@ -38,6 +38,10 @@ if ( !isset( $_SESSION[ 'user_id' ] ) ) {
 <body>
 <?php include 'side_bar.php'; ?>
 
+
+
+<div class="container-fluid" style="overflow-y: auto;">
+  
 <!-- TOP BAR -->
 <div id="top-bar" class="d-flex justify-content-between align-items-center px-3 py-2">
     <!-- Language Selector -->
@@ -64,7 +68,6 @@ if ( !isset( $_SESSION[ 'user_id' ] ) ) {
 </div>
 
 <!-- MAIN CONTENT CONTAINER -->
-<div class="container-fluid" style="overflow-y: auto;">
   <div id="main-content" class="p-3"> 
     <!-- Content will be dynamically loaded here -->
     <p>Loading...</p>

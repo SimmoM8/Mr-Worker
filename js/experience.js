@@ -73,7 +73,14 @@ const Experience = {
       {
         call,
       },
-      function (experiences) {
+      function (response) {
+
+        const selectedLanguage = response.selected_language;
+        const nullMessage = response.null_message;
+        const experiences = Array.isArray(response.data) ? response.data : [response.data];
+
+        // Handle the array as usual
+
         const container = $(containerId).empty(); // Clear existing content
         // Re-inject the "Add Experience" button
         const addExperienceHTML = `
@@ -94,31 +101,57 @@ const Experience = {
 
         if (Array.isArray(experiences)) {
           experiences.sort((a, b) => a.order - b.order); // Sort by order
+
+          // Loop through each experience and render the card
           experiences.forEach((experience) =>
-            container.append(Experience.renderExperienceCard(experience, call))
+            container.append(Experience.renderExperienceCard(experience, call, nullMessage))
           );
         } else {
           console.error("Expected an array but got:", experiences);
         }
+
       }
     );
   },
 
   // Render the experience card HTML
-  renderExperienceCard: function (experience, call) {
+  renderExperienceCard: function (experience, call, nullMessage) {
+    const skills = Array.isArray(experience.skills) ? experience.skills : [];
+
+    let columnName = "";
+
+    if (call == 'work_experience') {
+      columnName = 'job_position';
+    } else if (call == 'education') {
+      columnName = 'course';
+    }
+
+    // Add input field if translate mode is enabled
+    const renderTranslationInput = (id, column, value, type) => {
+      if (Experience.translateMode) {
+        return `
+        <input type="text" class="form-control mt-2 translate-input" 
+               placeholder="Enter translation" value="${value || ""}" 
+               data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">
+        <button class="btn btn-success btn-sm mt-1 save-translation" 
+                data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">Save</button>`;
+      }
+      return "";
+    };
+
     return `
-    <div class="experience_card-container row" id="experience_card_${experience.id
-      }">
+    <div class="experience_card-container row" id="experience_card_${experience.id}">
       <div class="time-plot">
-        <p class="time">${experience.end_date
-      }<br> <i class="fas fa-arrow-up"></i><br>${experience.start_date}</p>
+        <p class="time">${experience.end_date}<br> 
+        <i class="fas fa-arrow-up"></i><br>${experience.start_date}</p>
       </div>
       <div class="card experience_card col">
-        <div class="experience-header card-colored" id="experience_header_${experience.id
-      }">
-          <h3>${experience.title}</h3>
-          <p class="sub-heading">${experience.organization}  ●  ${experience.location
-      }</p>
+        <div class="experience-header card-colored" id="experience_header_${experience.id}">
+          <h3 class="${!experience.title || Experience.translateMode ? 'null_message' : ''}">${Experience.translateMode ? experience.ref_title : experience.title || experience.ref_title}</h3>
+          ${renderTranslationInput(experience.id, columnName, experience.title, "entry")
+      }
+
+    ${!Experience.translateMode ? '<p class= "sub-heading">' + experience.organization + '●' + experience.location + '</p>' : ''}
           <div class="menu-icon-container" id="menu_container_${experience.id}">
             <div class="action-buttons slide-in" id="action_buttons_${experience.id
       }">
@@ -136,28 +169,30 @@ const Experience = {
               <i class="fas fa-ellipsis-h"></i>
             </button>
           </div>
-        </div>
-        <div class="collapsible-content" id="content_${experience.id
-      }" style="display: none;">
-          <h4>Demonstrated Skills</h4>
-          <div class="skills-list-wrapper">
-            <ul class="skills-list list-group list-group-flush" id="skills_list_${experience.id
-      }">
-              ${experience.skills
-        .map(
-          (skill) => `
-                <li class="skill-item list-group-item" data-id="${skill.skill_id}" data-employer="${experience.id}" data-call="${call}">
-                  <div class="d-flex">
-					  <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.skill_id}">
-						<i class="fas fa-square-minus"></i>
-					  </button>
-                    <span class="point-text">${skill.skill_name}</span>
-                  </div>
-                </li>`
-        )
-        .join("")}
-            </ul>
-          </div>
+        </div >
+  <div class="collapsible-content" id="content_${experience.id}" style="display: none;">
+    <h4>Demonstrated Skills</h4>
+    <div class="skills-list-wrapper">
+      <ul class="skills-list list-group list-group-flush" id="skills_list_${experience.id}">
+        ${skills.length > 0
+        ? skills
+          .map(
+            (skill) => `
+                          <li class="skill-item list-group-item" data-id="${skill.skill_id}" data-employer="${experience.id}" data-call="${call}">
+                            <div class="d-flex">
+                              <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.skill_id}">
+                                <i class="fas fa-square-minus"></i>
+                              </button>
+                              <span class="point-text ${!skill.skill_name || Experience.translateMode ? 'reference' : ''}">${Experience.translateMode ? skill.ref_skill : skill.skill_name || skill.ref_skill}</span>
+                            </div>
+                            ${renderTranslationInput(skill.skill_id, "skill", skill.skill_name, "point")}
+                          </li>`
+          )
+          .join("")
+        : "<li class='list-group-item text-muted'>No skills available</li>"
+      }
+      </ul>
+    </div>
           <div class="input-group mb-3">
 			<input type="text" class="form-control" id="input_experience_${experience.id
       }" placeholder="Type your skill here">
@@ -165,12 +200,12 @@ const Experience = {
       }" onClick="Experience.addPoint('${call}', '${experience.id
       }')"><i class="fas fa-square-plus"></i></button>
           </div>
-        </div>
-      </div>
-      <div class="drag-handle menu-btn col-1" data-id="${experience.id}">
-        <i class="fas fa-grip-lines"></i> <!-- Three-dot icon for dragging -->
-      </div>
-    </div>
+  </div>
+      </div >
+  <div class="drag-handle menu-btn col-1" data-id="${experience.id}">
+    <i class="fas fa-grip-lines"></i> <!-- Drag handle -->
+  </div>
+    </div >
   `;
   },
 
@@ -179,7 +214,7 @@ const Experience = {
     const containerId =
       section === "work_experience" ? "#employers" : "#courses";
     const updatedOrder = [
-      ...document.querySelectorAll(`${containerId} .experience_card-container`),
+      ...document.querySelectorAll(`${containerId} .experience_card - container`),
     ].map((item, index) => ({
       id: item.getAttribute("id").split("_")[2],
       order: index + 1,
@@ -503,10 +538,10 @@ const Experience = {
 
   // Function to add a skill to an experience or education entry
   addPoint: function (call, parentId) {
-    const inputId = `#input_experience_${parentId}`;
+    const inputId = `#input_experience_${parentId} `;
     const inputElement = $(inputId);
     if (inputElement.length === 0) {
-      console.error(`Element not found: ${inputId}`);
+      console.error(`Element not found: ${inputId} `);
       return;
     }
     const skillName = inputElement.val().trim();
@@ -529,15 +564,15 @@ const Experience = {
         try {
           if (response.status === "success") {
             const newSkillItem = `
-            <li class="skill-item list-group-item" data-id="${response.insert_id}" data-employer="${parentId}" data-call="${call}">
-              <div class="d-flex">
-				<button class="menu-btn btn-outline-danger delete-point" data-id="${response.insert_id}">
-				  <i class="fas fa-trash-alt"></i>
-				</button>
-            	<span class="point-text">${response.skill_name}</span>
-              </div>
-            </li>`;
-            const skillsListId = `#skills_list_${parentId}`;
+  <li class="skill-item list-group-item" data - id="${response.insert_id}" data - employer="${parentId}" data - call="${call}">
+    <div class="d-flex">
+      <button class="menu-btn btn-outline-danger delete-point" data-id="${response.insert_id}">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+      <span class="point-text">${response.skill_name}</span>
+    </div>
+            </li > `;
+            const skillsListId = `#skills_list_${parentId} `;
             $(skillsListId).append(newSkillItem);
             inputElement.val(""); // Clear input
           } else {
@@ -558,7 +593,7 @@ const Experience = {
 
   // Edit skill items in-place with better error handling
   editSkillItem: function (event) {
-    if (!$(event.target).is("input, .delete-point")) {
+    if (!$(event.target).is("input, .delete-point") && !Experience.translateMode) {
       console.log(event);
       const pointContainer = $(event.currentTarget);
       const pointText = pointContainer.find(".point-text");
@@ -658,7 +693,7 @@ const Experience = {
 
     // Validate each required field
     requiredFields.forEach((fieldId) => {
-      const field = $(`#${fieldId}`);
+      const field = $(`#${fieldId} `);
       if (field.val().trim() === "") {
         field.addClass("is-invalid"); // Highlight the empty field
         isValid = false;
@@ -696,19 +731,22 @@ const Experience = {
       formData.end_year = $("#end_year").val().trim();
       formData.end_date = `${Experience.getMonthAbbreviation(
         formData.end_month
-      )} ${formData.end_year}`;
+      )
+        } ${formData.end_year} `;
     } else {
       // Set end date to current date when "Currently working here" is checked
       const today = new Date();
       formData.end_date = `${Experience.getMonthAbbreviation(
         `0${today.getMonth() + 1}`.slice(-2)
-      )} ${today.getFullYear()}`;
+      )
+        } ${today.getFullYear()} `;
     }
 
     // Create the formatted start date using month abbreviations
     formData.start_date = `${Experience.getMonthAbbreviation(
       formData.start_month
-    )} ${formData.start_year}`;
+    )
+      } ${formData.start_year} `;
 
     Experience.ajaxRequest(
       "add-entry.php",
@@ -753,7 +791,7 @@ const Experience = {
 
     // Validate each required field
     requiredFields.forEach((fieldId) => {
-      const field = $(`#${fieldId}`);
+      const field = $(`#${fieldId} `);
       if (field.val().trim() === "") {
         field.addClass("is-invalid"); // Highlight the empty field
         isValid = false;
@@ -792,19 +830,22 @@ const Experience = {
       formData.end_year = $("#end_year").val().trim();
       formData.end_date = `${Experience.getMonthAbbreviation(
         formData.end_month
-      )} ${formData.end_year}`;
+      )
+        } ${formData.end_year} `;
     } else {
       // Set end date to current date when "Currently working here" is checked
       const today = new Date();
       formData.end_date = `${Experience.getMonthAbbreviation(
         `0${today.getMonth() + 1}`.slice(-2)
-      )} ${today.getFullYear()}`;
+      )
+        } ${today.getFullYear()} `;
     }
 
     // Create the formatted start date using month abbreviations
     formData.start_date = `${Experience.getMonthAbbreviation(
       formData.start_month
-    )} ${formData.start_year}`;
+    )
+      } ${formData.start_year} `;
 
     console.log("Updating entry:", formData.call);
 
@@ -833,7 +874,7 @@ const Experience = {
       .on("click", ".menu-toggle", function (e) {
         e.stopPropagation(); // Prevent click event from affecting other elements
         const experienceId = $(this).attr("id").split("_")[1];
-        const actionButtons = $(`#action_buttons_${experienceId}`);
+        const actionButtons = $(`#action_buttons_${experienceId} `);
         const menuIcon = $(`#menu_${experienceId} i`);
 
         // Toggle visibility of action buttons and change icon
@@ -935,9 +976,47 @@ const Experience = {
       .on("click", ".experience-header", function (e) {
         if (!Experience.isDragging) {
           const experienceId = $(this).attr("id").split("_")[2];
-          const contentId = `content_${experienceId}`;
+          const contentId = `content_${experienceId} `;
           Experience.toggleList(contentId);
         }
       });
-  },
+
+    // Handle saving translations
+    $(document).on("click", ".save-translation", function () {
+      const id = $(this).data("id");
+      const column = $(this).data("column");
+      const call = $(this).data("call");
+      const type = $(this).data("type"); // entry or point
+      const inputValue = $(this).prev(".translate-input").val().trim();
+
+      if (!inputValue) {
+        alert("Please enter a valid translation.");
+        return;
+      }
+
+      // Update entry translation using update-entry.php
+      Experience.ajaxRequest(
+        "update-translation.php",
+        "POST",
+        {
+          id,
+          call,
+          column,
+          inputValue,
+          type
+        },
+        function (response) {
+          if (response.status === "success") {
+            alert("Translation saved successfully.");
+            //Experience.fetchData(call); // Reload experiences
+          } else {
+            console.error("Error saving translation:", response.message);
+          }
+        },
+        function (xhr, status, error) {
+          console.error("Error saving entry translation:", error);
+        }
+      );
+    });
+  }
 };

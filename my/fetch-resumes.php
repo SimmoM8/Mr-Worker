@@ -7,7 +7,11 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
+$selectedLanguage = $_SESSION['selected_language'] ?? 'lang_1'; // Default to lang_1 if not set
+
 require '../db.php';
+
+error_log("Fetching resumes with language: " . $_SESSION['selected_language']);
 
 try {
   $ajax_output = ''; // Initialize variable
@@ -25,7 +29,7 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       // Extract data for the template
       $id = htmlspecialchars($row['id']);
-      $name = htmlspecialchars($row['job_position_lang_1']);
+      $name = htmlspecialchars($row['job_position_' . $selectedLanguage]);
       $last_updated = htmlspecialchars($row['last_updated']);
       $color1 = $row['grad_color_1'];
       $color2 = $row['grad_color_2'];

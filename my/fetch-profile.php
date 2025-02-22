@@ -37,4 +37,3 @@ try {
 
 // Output the result
 echo $ajax_output;
-?>

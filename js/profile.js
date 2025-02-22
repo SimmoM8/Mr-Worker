@@ -20,23 +20,23 @@ $(document).ready(function () {
 
   // Render the profile picture with the overlay if required
   function renderImage(containerSelector, addOverlay = false, altPath) {
-	  console.log("-->");
+    console.log("-->");
     renderProfilePicture(containerSelector, () => {
-        const container = $(containerSelector);
+      const container = $(containerSelector);
 
-        // Add the overlay if needed
-        if (addOverlay && !container.find('.overlay').length) {
-          container.append(overlayHTML);
-        }
+      // Add the overlay if needed
+      if (addOverlay && !container.find('.overlay').length) {
+        container.append(overlayHTML);
+      }
 
-        // Update slider after rendering the image
-        const img = container.find('img');
-        adjustmentScale = parseFloat(img.attr('data-scale')) || 1;
-        imageScaleSlider.val(adjustmentScale);
-        adjustmentX = parseFloat(img.attr('data-x')) || 0;
-        adjustmentY = parseFloat(img.attr('data-y')) || 0;
+      // Update slider after rendering the image
+      const img = container.find('img');
+      adjustmentScale = parseFloat(img.attr('data-scale')) || 1;
+      imageScaleSlider.val(adjustmentScale);
+      adjustmentX = parseFloat(img.attr('data-x')) || 0;
+      adjustmentY = parseFloat(img.attr('data-y')) || 0;
 
-      },
+    },
       altPath
     );
   }
@@ -241,7 +241,7 @@ $(document).ready(function () {
     const previousScale = adjustmentScale; // Previous scale value
     const imgWidth = img.width() * previousScale;
     const imgHeight = img.height() * previousScale;
-    
+
     const ratioKonstantX = imgWidth / (4 * adjustmentX);
     const ratioKonstantY = imgHeight / (4 * adjustmentY);
 
@@ -293,11 +293,11 @@ $(document).ready(function () {
         alert(response.error);
       } else {
 
-            // Decode safely
-            const parser = new DOMParser();
+        // Decode safely
+        const parser = new DOMParser();
 
         console.log(response);
-        console.log(response.country_lang_1);
+        console.log(response.country_ + response.lang_num);
 
         // Populate inputs
         $('#inputFirstName').val(response.first_name);
@@ -307,14 +307,14 @@ $(document).ready(function () {
         $('#inputStreet').val(response.street);
         $('#inputTown').val(response.town);
         $('#inputPostCode').val(response.post_code);
-        $('#inputCountry').val(response.country_lang_1);
-        $('#inputAboutMe').val(response.about_me_lang_1);
+        $('#inputCountry').val(response.country_ + response.lang_num);
+        $('#inputAboutMe').val(response.about_me_ + response.lang_num);
 
         // Populate display values
         $('#displayName').text(`${response.first_name} ${response.last_name}`);
         $('#displayMobile').text(`${response.country_code} ${response.mobile}`);
-        $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country_lang_1}`);
-        $('#displayAbout').text(response.about_me_lang_1);
+        $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country_ + response.lang_num}`);
+        $('#displayAbout').text(response.about_me_ + response.lang_num);
       }
     },
     error: function () {
@@ -451,9 +451,9 @@ $(document).ready(function () {
           success: function (response) {
             const result = JSON.parse(response);
             if (result.status === 'success') {
-				console.log("reseting modal");
+              console.log("reseting modal");
               resetEditModal();
-				console.log(`re-rendering image: ${response}`);
+              console.log(`re-rendering image: ${response}`);
               // Re-render the editable image with the new image path
               renderImage(editableImageContainerId, false, result.filePath); // Reset adjustment values
 
@@ -474,7 +474,7 @@ $(document).ready(function () {
 function updateMaskSize() {
   const container = document.getElementById('editableImageContainer');
   const mask = document.querySelector('.edit-mask');
-  
+
   if (container && mask) {
     const containerWidth = container.offsetWidth; // Get the container's width
     const maskSize = containerWidth / 2; // Adjust size to match radius of container

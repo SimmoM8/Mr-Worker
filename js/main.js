@@ -91,10 +91,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     popupLanguageInput.addEventListener("input", async () => {
       const query = popupLanguageInput.value.trim();
-      console.log('Query: ', query);
       if (query.length > 0) {
         const languages = await fetchLanguages(query);
-        console.log('Languages: ', languages);
         populateDropdown(languages, popupLanguagesDropdown, (languageCode, languageName) => {
           popupLanguageInput.value = languageName;
           confirmBtn.dataset.langCode = languageCode;
@@ -163,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const option = document.createElement("option");
       option.value = column;
       option.textContent = languageName;
-      if (languageName === selectedLanguage) {
+      if (column === selectedLanguage) {
         option.selected = true;
       }
       userLanguageSelector.appendChild(option);
@@ -198,14 +196,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  /** Change selected language **/
-  userLanguageSelector.addEventListener("change", () => {
+  /** Change selected language and reload content **/
+  userLanguageSelector.addEventListener("change", async () => {
     if (userLanguageSelector.value === "add_language") {
       showAddLanguageInput();
     } else {
-      updateSessionLanguage(userLanguageSelector.value);
+      await updateSessionLanguage(userLanguageSelector.value);
+      reloadCurrentPage(); // 🔄 Reload the dynamic content based on selected language
     }
   });
+
+  /** Reload the current page content dynamically **/
+  function reloadCurrentPage() {
+    const currentPage = new URLSearchParams(window.location.search).get("page") || "resumes.php";
+    console.log("Reloading current page...:", currentPage);
+    loadPage(currentPage);
+  }
 
   /** Update session language **/
   async function updateSessionLanguage(languageCode) {
@@ -412,4 +418,14 @@ document.addEventListener("DOMContentLoaded", function () {
       loadPage(event.state.page); // Load the page from history state
     }
   });
+
+  // Event Listener for Translate Mode Toggle
+  document.getElementById("translateModeToggle").addEventListener("click", function () {
+    Experience.translateMode = !Experience.translateMode; // Toggle the mode
+    this.textContent = Experience.translateMode ? "Disable Translate Mode" : "Enable Translate Mode";
+
+    // Refresh the content to add/remove translation fields dynamically
+    reloadCurrentPage();
+  });
+
 });

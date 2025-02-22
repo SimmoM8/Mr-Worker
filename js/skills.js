@@ -10,8 +10,10 @@ $(document).ready(function () {
  */
 function fetchSkills(categories) {
   categories.forEach(category => {
-    ajaxRequest('fetch.php', 'GET', { call: category }, data => {
-      const skillList = data;
+    ajaxRequest('fetch.php', 'GET', { call: category }, response => {
+      const selectedLanguage = response.selected_language;
+      const nullMessage = response.null_message;
+      const skillList = response.data;
       const skillContainer = $(`#${category}`);
 
       skillContainer.empty(); // Clear existing content
@@ -19,10 +21,10 @@ function fetchSkills(categories) {
       skillList.forEach(skill => {
         skillContainer.append(
           category === "licenses"
-            ? createLicenseItem(skill)
+            ? createLicenseItem(skill, nullMessage)
             : category === "languages"
-              ? createLanguageSkill(skill)
-              : createSkillItem(skill)
+              ? createLanguageSkill(skill, nullMessage)
+              : createSkillItem(skill, nullMessage)
         );
       });
     });
@@ -53,13 +55,13 @@ function ajaxRequest(url, method, data, onSuccess) {
  * @param {object} skill - Skill data.
  * @returns {string} HTML string for a language skill item.
  */
-function createLanguageSkill(skill) {
+function createLanguageSkill(skill, nullMessage) {
   return `
     <li class="skill-item list-group-item" data-id="${skill.id}" data-percentage="${skill.percentage}">
       <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
         <i class="fas fa-square-minus"></i>
       </button>
-      <span>${skill.language_lang_1} - <span class="percentage-display">${skill.percentage}</span>%</span>
+      <span class="${!skill.language ? 'null_message' : ''}">${skill.language || nullMessage} - <span class="percentage-display">${skill.percentage}</span>%</span>
       <div class="progress mt-2 position-relative">
         <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%;" aria-valuenow="${skill.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
         <input type="range" class="form-range language-slider position-absolute w-100" min="0" max="100" value="${skill.percentage}" style="opacity: 0; transition: opacity 0.2s;">
@@ -73,13 +75,13 @@ function createLanguageSkill(skill) {
  * @param {object} skill - Skill data.
  * @returns {string} HTML string for a skill item.
  */
-function createSkillItem(skill) {
+function createSkillItem(skill, nullMessage) {
   return `
     <li class="skill-item d-flex list-group-item list-group-item-action" style="align-items: center;" data-id="${skill.id}">
       <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
         <i class="fas fa-square-minus"></i>
       </button>
-      <span class="point-text">${skill.skill_lang_1}</span>
+      <span class="point-text ${!skill.language ? 'null_message' : ''}">${skill.language || nullMessage}</span>
     </li>
   `;
 }
@@ -234,14 +236,14 @@ function handleSkillDelete(event) {
  * @param {object} license - License data.
  * @returns {string} HTML string for a license item.
  */
-function createLicenseItem(license) {
+function createLicenseItem(license, nullMessage) {
   return `
     <li class="skill-item list-group-item" data-id="${license.id}">
       <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
         <i class="fas fa-trash-alt"></i>
       </button>
-      <span class="license-name">${license.license_lang_1}</span>
-      <p class="license-description">${license.description_lang_1}</p>
+      <span class="license-name ${!license.license ? 'null_message' : ''}">${license.license || nullMessage}</span>
+      <p class="license-description ${!license.description ? 'null_message' : ''}">${license.description || nullMessage}</p>
       <button class="btn btn-sm btn-secondary edit-license">Edit</button>
     </li>
   `;

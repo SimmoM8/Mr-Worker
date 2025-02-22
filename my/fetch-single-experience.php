@@ -11,6 +11,8 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
+$selectedLanguage = $_SESSION['selected_language'] ?? 'lang_1'; // Default to lang_1 if not set
+
 // Check if the required parameters are provided
 if (isset($_GET['id']) && isset($_GET['call'])) {
   $experienceId = trim(strip_tags($_GET['id']));
@@ -27,12 +29,12 @@ if (isset($_GET['id']) && isset($_GET['call'])) {
   try {
     // Prepare the SQL query based on the type of experience
     if ($call === 'work_experience') {
-      $sql = "SELECT `id`, `employer`, `job_position_lang_1`, `area` AS `city`, `country_lang_1`, 
+      $sql = "SELECT `id`, `employer`, `job_position_$selectedLanguage`, `area` AS `city`, `country_$selectedLanguage`, 
                            `start_date`, `end_date`, `is_current`
                     FROM `employers`
                     WHERE `id` = :id";
     } elseif ($call === 'education') {
-      $sql = "SELECT `id`, `school`, `course_lang_1`, `area` AS `city`, `country_lang_1`, 
+      $sql = "SELECT `id`, `school`, `course_$selectedLanguage`, `area` AS `city`, `country_$selectedLanguage`, 
                            `start_date`, `end_date`, `is_current`
                     FROM `courses`
                     WHERE `id` = :id";

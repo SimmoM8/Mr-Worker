@@ -11,6 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 // Get the user ID from session
 $user_id = $_SESSION['user_id'];
 
+$selectedLanguage = $_SESSION['selected_language'];
+
 require '../db.php';
 
 // Validate and sanitize input
@@ -40,8 +42,8 @@ try {
                 street = :street, 
                 town = :town, 
                 post_code = :post_code, 
-                country_lang_1 = :country, 
-                about_me_lang_1 = :about_me 
+                country_$selectedLanguage = :country, 
+                about_me_$selectedLanguage = :about_me 
             WHERE id = :user_id";
 
   $stmt = $pdo->prepare($sql);

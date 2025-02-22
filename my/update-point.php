@@ -10,6 +10,8 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
+$selectedLanguage = $_SESSION['selected_language'];
+
 // Check if the request is a POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Get parameters from POST request
@@ -29,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'error', 'message' => 'Percentage value missing']);
         exit();
       }
-
       $stmt = $pdo->prepare("UPDATE `languages` SET `percentage` = :percentage WHERE `id` = :id");
       $stmt->execute([':percentage' => $percentage, ':id' => $pointId]);
     } elseif ($call === 'licenses') {
@@ -38,8 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'error', 'message' => 'Field value missing']);
         exit();
       }
-
-      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_lang_1` = :license, `description_lang_1` = :description WHERE `id` = :id");
+      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_$selectedLanguage` = :license, `description_lang_1` = :description WHERE `id` = :id");
       $stmt->execute([
         ':license' => $license,
         ':description' => $description,
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
       }
       error_log('call: ' . $call);
-      $stmt = $pdo->prepare("UPDATE `$call` SET `skill_lang_1` = :skill WHERE `id` = :id");
+      $stmt = $pdo->prepare("UPDATE `$call` SET `skill_$selectedLanguage` = :skill WHERE `id` = :id");
       $stmt->execute([':skill' => $editedPoint, ':id' => $pointId]);
     }
 

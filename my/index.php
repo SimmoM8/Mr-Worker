@@ -41,14 +41,13 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 
 <body>
+  <!-- SIDE BAR -->
   <?php include 'side_bar.php'; ?>
 
-
-
-  <div class="container-fluid" style="overflow-y: auto;">
+  <div class="container-fluid" style="overflow-y: auto; padding: 0;">
 
     <!-- TOP BAR -->
-    <div id="top-bar" class="d-flex justify-content-between align-items-center px-3 py-2">
+    <div id="top-bar" class="d-flex justify-content-between align-items-center px-5 py-3">
       <!-- Language Selector -->
       <div class="d-flex align-items-center">
         <label for="userLanguageSelector" class="me-2">Language:</label>
@@ -67,7 +66,10 @@ if (!isset($_SESSION['user_id'])) {
         </div>
 
         <!-- Translate Mode Button -->
-        <button id="translateModeToggle" class="btn btn-outline-primary">Enable Translate Mode</button>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="translateModeSwitch">
+          <label class="form-check-label" for="translateModeSwitch" style="text-wrap: nowrap;">Translate Mode</label>
+        </div>
       </div>
 
       <!-- User Profile Dropdown -->

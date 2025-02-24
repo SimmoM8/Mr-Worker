@@ -10,8 +10,10 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
+error_log("Test: ");
 // Set the selected language
 $selectedLanguage = $_SESSION['selected_language'] ?? 'lang_1'; // Default to lang_1 if not set
+error_log("Selected Language: " . $selectedLanguage);
 
 require '../db.php'; // Include the PDO connection
 
@@ -28,6 +30,7 @@ $userId = $_SESSION['user_id'];
 $responseData = [];
 
 try {
+  error_log("Call: " . $call);
   // Dynamic queries based on call type
   if (in_array($call, ['hard_skills', 'soft_skills'])) {
     // Fetch skills
@@ -100,6 +103,12 @@ try {
     'null_message' => '- Enter translate mode to type translation -',
     'data' => $responseData,  // ✅ Always an array
   ];
+
+  //error_log("Response: " . print_r($response, true));
+
+  error_log("Test: ");
+  error_log("Response: " . json_encode($response));
+
 
   echo json_encode($response);
 } catch (PDOException $e) {

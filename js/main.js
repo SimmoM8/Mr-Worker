@@ -419,13 +419,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Event Listener for Translate Mode Toggle
-  document.getElementById("translateModeToggle").addEventListener("click", function () {
-    Experience.translateMode = !Experience.translateMode; // Toggle the mode
-    this.textContent = Experience.translateMode ? "Disable Translate Mode" : "Enable Translate Mode";
+  // Event Listener for Translate Mode Toggle Switch
+  document.getElementById("translateModeSwitch").addEventListener("change", function () {
+    Experience.translateMode = this.checked; // Enable/disable based on switch state
+    Skills.translateMode = this.checked; // Enable/disable based on switch state
+    //console.log("Translate Mode:", Experience.translateMode ? "Enabled" : "Disabled");
 
-    // Refresh the content to add/remove translation fields dynamically
+    // Refresh the content to apply translations dynamically
     reloadCurrentPage();
   });
+
 
 });

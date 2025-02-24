@@ -5,33 +5,6 @@ $(document).ready(function () {
 });
 
 /**
- * Fetch and populate skills for the given categories.
- * @param {Array} categories - Array of skill categories to fetch.
- */
-function fetchSkills(categories) {
-  categories.forEach(category => {
-    ajaxRequest('fetch.php', 'GET', { call: category }, response => {
-      const selectedLanguage = response.selected_language;
-      const nullMessage = response.null_message;
-      const skillList = response.data;
-      const skillContainer = $(`#${category}`);
-
-      skillContainer.empty(); // Clear existing content
-
-      skillList.forEach(skill => {
-        skillContainer.append(
-          category === "licenses"
-            ? createLicenseItem(skill, nullMessage)
-            : category === "languages"
-              ? createLanguageSkill(skill, nullMessage)
-              : createSkillItem(skill, nullMessage)
-        );
-      });
-    });
-  });
-}
-
-/**
  * General AJAX request handler.
  * @param {string} url - Request URL.
  * @param {string} method - Request method (GET, POST).
@@ -51,17 +24,65 @@ function ajaxRequest(url, method, data, onSuccess) {
 }
 
 /**
+ * Fetch and populate skills for the given categories.
+ * @param {Array} categories - Array of skill categories to fetch.
+ */
+function fetchSkills(categories) {
+  console.log("Translate mode: ", Skills.translateMode);
+
+  categories.forEach(category => {
+    ajaxRequest('fetch.php', 'GET', { call: category }, response => {
+      const selectedLanguage = response.selected_language;
+      const nullMessage = response.null_message;
+      const skillList = response.data;
+      const skillContainer = $(`#${category}`);
+
+      skillContainer.empty(); // Clear existing content
+
+      skillList.forEach(skill => {
+        skillContainer.append(
+          category === "licenses"
+            ? createLicenseItem(skill, $call)
+            : category === "languages"
+              ? createLanguageSkill(skill, $call)
+              : createSkillItem(skill, $call)
+        );
+      });
+    });
+  });
+}
+
+
+/**
+ * Create a regular skill item.
+ * @param {object} skill - Skill data.
+ * @returns {string} HTML string for a skill item.
+ */
+function createSkillItem(skill, call) {
+  return `
+    <li class="skill-item d-flex list-group-item list-group-item-action" style="align-items: center;" data-id="${skill.id}">
+      <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
+        <i class="fas fa-square-minus"></i>
+      </button>
+      <span class="point-text ${!skill.language ? 'null_message' : ''}">${skill.language || nullMessage}</span>
+      ${renderTranslationInput(skill.id, columnName, skill.title, "entry")}
+    </li>
+  `;
+}
+
+/**
  * Create a language skill item.
  * @param {object} skill - Skill data.
  * @returns {string} HTML string for a language skill item.
  */
-function createLanguageSkill(skill, nullMessage) {
+function createLanguageSkill(skill, call) {
   return `
     <li class="skill-item list-group-item" data-id="${skill.id}" data-percentage="${skill.percentage}">
       <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
         <i class="fas fa-square-minus"></i>
       </button>
       <span class="${!skill.language ? 'null_message' : ''}">${skill.language || nullMessage} - <span class="percentage-display">${skill.percentage}</span>%</span>
+      ${renderTranslationInput(experience.id, columnName, experience.title, "entry")}
       <div class="progress mt-2 position-relative">
         <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%;" aria-valuenow="${skill.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
         <input type="range" class="form-range language-slider position-absolute w-100" min="0" max="100" value="${skill.percentage}" style="opacity: 0; transition: opacity 0.2s;">
@@ -71,20 +92,40 @@ function createLanguageSkill(skill, nullMessage) {
 }
 
 /**
- * Create a regular skill item.
- * @param {object} skill - Skill data.
- * @returns {string} HTML string for a skill item.
+ * Create a license item with edit and delete options.
+ * @param {object} license - License data.
+ * @returns {string} HTML string for a license item.
  */
-function createSkillItem(skill, nullMessage) {
+function createLicenseItem(license, call) {
   return `
-    <li class="skill-item d-flex list-group-item list-group-item-action" style="align-items: center;" data-id="${skill.id}">
-      <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
-        <i class="fas fa-square-minus"></i>
+    <li class="skill-item list-group-item" data-id="${license.id}">
+      <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
+        <i class="fas fa-trash-alt"></i>
       </button>
-      <span class="point-text ${!skill.language ? 'null_message' : ''}">${skill.language || nullMessage}</span>
+      <span class="license-name ${!license.license ? 'null_message' : ''}">${license.license || nullMessage}</span>
+      ${renderTranslationInput(license.id, columnName, license.title)}
+      <p class="license-description ${!license.description ? 'null_message' : ''}">${license.description || nullMessage}</p>
+      ${renderTranslationInput(license.id, columnName, license.title)}
+      <button class="btn btn-sm btn-secondary edit-license">Edit</button>
     </li>
   `;
 }
+
+
+// Add input field if translate mode is enabled
+const renderTranslationInput = (id, column, value, type) => {
+  if (Experience.translateMode) {
+    return `
+      <div class="d-flex align-items-center mt-2">
+        <input type="text" class="form-control translate-input" 
+               placeholder="Enter translation" value="${value || ""}" 
+               data-id="${id}" data-column="${column}" data-call="${call}">
+        <button class="btn btn-success btn-sm ms-2 save-translation" 
+                data-id="${id}" data-column="${column}" data-call="${call}">Save</button>
+      </div>`;
+  }
+  return "";
+};
 
 /**
  * Set up event listeners for skill interaction.
@@ -229,24 +270,6 @@ function handleSkillDelete(event) {
       () => fetchSkills([category]) // Refresh the list on success
     );
   }
-}
-
-/**
- * Create a license item with edit and delete options.
- * @param {object} license - License data.
- * @returns {string} HTML string for a license item.
- */
-function createLicenseItem(license, nullMessage) {
-  return `
-    <li class="skill-item list-group-item" data-id="${license.id}">
-      <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
-        <i class="fas fa-trash-alt"></i>
-      </button>
-      <span class="license-name ${!license.license ? 'null_message' : ''}">${license.license || nullMessage}</span>
-      <p class="license-description ${!license.description ? 'null_message' : ''}">${license.description || nullMessage}</p>
-      <button class="btn btn-sm btn-secondary edit-license">Edit</button>
-    </li>
-  `;
 }
 
 /**

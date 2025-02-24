@@ -74,7 +74,6 @@ const Experience = {
         call,
       },
       function (response) {
-
         const selectedLanguage = response.selected_language;
         const nullMessage = response.null_message;
         const experiences = Array.isArray(response.data) ? response.data : [response.data];
@@ -102,6 +101,7 @@ const Experience = {
         if (Array.isArray(experiences)) {
           experiences.sort((a, b) => a.order - b.order); // Sort by order
 
+          console.log("Experience:", experiences, "Call:", call);
           // Loop through each experience and render the card
           experiences.forEach((experience) =>
             container.append(Experience.renderExperienceCard(experience, call, nullMessage))
@@ -116,6 +116,7 @@ const Experience = {
 
   // Render the experience card HTML
   renderExperienceCard: function (experience, call, nullMessage) {
+    console.log("Rendering card for experience:", experience);
     const skills = Array.isArray(experience.skills) ? experience.skills : [];
 
     let columnName = "";
@@ -130,11 +131,13 @@ const Experience = {
     const renderTranslationInput = (id, column, value, type) => {
       if (Experience.translateMode) {
         return `
-        <input type="text" class="form-control mt-2 translate-input" 
+      <div class="d-flex align-items-center mt-2">
+        <input type="text" class="form-control translate-input" 
                placeholder="Enter translation" value="${value || ""}" 
                data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">
-        <button class="btn btn-success btn-sm mt-1 save-translation" 
-                data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">Save</button>`;
+        <button class="btn btn-success btn-sm ms-2 save-translation" 
+                data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">Save</button>
+      </div>`;
       }
       return "";
     };

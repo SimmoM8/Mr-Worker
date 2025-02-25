@@ -385,14 +385,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Function to initialize dynamically loaded content
-  function initializeContent() {
-    // Check if Experience.js is loaded and call init
-    if (typeof Experience !== "undefined" && Experience.init) {
-      Experience.init(); // Call the init function from experience.js
-    }
-  }
-
   // Add click event listeners to sidebar buttons
   navButtons.forEach((button) => {
     button.addEventListener("click", function () {
@@ -422,7 +414,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Event Listener for Translate Mode Toggle Switch
   document.getElementById("translateModeSwitch").addEventListener("change", function () {
     Experience.translateMode = this.checked; // Enable/disable based on switch state
-    Skills.translateMode = this.checked; // Enable/disable based on switch state
+    Skills.translateMode = this.checked;
+    Resumes.translateMode = this.checked;
+    Profile.translateMode = this.checked;
     //console.log("Translate Mode:", Experience.translateMode ? "Enabled" : "Disabled");
 
     // Refresh the content to apply translations dynamically

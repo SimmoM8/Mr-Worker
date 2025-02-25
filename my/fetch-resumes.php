@@ -8,10 +8,13 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $selectedLanguage = $_SESSION['selected_language'] ?? 'lang_1'; // Default to lang_1 if not set
+$translateMode = $_GET['translate_mode'];
+
+error_log("Get: " . print_r($_GET, true));
+
+error_log("Translate mode: " . $translateMode);
 
 require '../db.php';
-
-error_log("Fetching resumes with language: " . $_SESSION['selected_language']);
 
 try {
   $ajax_output = ''; // Initialize variable
@@ -30,6 +33,7 @@ try {
       // Extract data for the template
       $id = htmlspecialchars($row['id']);
       $name = htmlspecialchars($row['job_position_' . $selectedLanguage]);
+      $name_ref = htmlspecialchars($row['job_position_lang_1']);
       $last_updated = htmlspecialchars($row['last_updated']);
       $color1 = $row['grad_color_1'];
       $color2 = $row['grad_color_2'];

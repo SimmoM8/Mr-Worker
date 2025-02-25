@@ -102,7 +102,9 @@ if (!isset($_SESSION['user_id'])) {
   </form>
   <script src="../js/main.js"></script>
   <script src="../js/experience.js" defer></script>
-  <script src="../js/resumes.js"></script>
+  <script src="../js/skills.js" defer></script>
+  <script src="../js/resumes.js" defer></script>
+  <script src="../js/profile.js" defer></script>
 </body>
 
 </html>

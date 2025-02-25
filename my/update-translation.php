@@ -28,15 +28,8 @@ if ($type === 'entry' && isset($tableMap[$call])) {
     $call = $tableMap[$call];
 }
 
-error_log('call: ' . $call);
 
 $selectedLanguage = $_SESSION['selected_language'];
-
-if (!$id || !$column || !$value || !$call) {
-    error_log('id: ' . $id . ' column: ' . $column . ' value: ' . $value . ' call: ' . $call);
-    echo json_encode(['success' => false, 'message' => 'Missing required data.']);
-    exit();
-}
 
 if (!$call) {
     echo json_encode(['success' => false, 'message' => 'Invalid call type.']);
@@ -45,15 +38,23 @@ if (!$call) {
 
 $columnLang = "{$column}_{$selectedLanguage}";
 
-error_log('columnLang: ' . $columnLang);
-
 try {
-    $stmt = $pdo->prepare("UPDATE `$call` SET `$columnLang` = :value WHERE `id` = :id AND `user_id` = :user_id");
-    $stmt->execute([
-        ':value' => $value,
-        ':id' => $id,
-        ':user_id' => $_SESSION['user_id']
-    ]);
+    if ($call == 'users') {
+        $stmt = $pdo->prepare("UPDATE `$call` SET `$columnLang` = :value WHERE `id` = :id");
+        $stmt->execute([
+            ':value' => $value,
+            ':id' => $_SESSION['user_id']
+        ]);
+        echo json_encode(['success' => true, 'message' => 'Translation saved successfully.']);
+        exit();
+    } else {
+        $stmt = $pdo->prepare("UPDATE `$call` SET `$columnLang` = :value WHERE `id` = :id AND `user_id` = :user_id");
+        $stmt->execute([
+            ':value' => $value,
+            ':id' => $id,
+            ':user_id' => $_SESSION['user_id']
+        ]);
+    }
 
     echo json_encode(['success' => true, 'message' => 'Translation saved successfully.']);
 } catch (PDOException $e) {

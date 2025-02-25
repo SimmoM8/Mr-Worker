@@ -39,19 +39,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'error', 'message' => 'Field value missing']);
         exit();
       }
-      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_$selectedLanguage` = :license, `description_lang_1` = :description WHERE `id` = :id");
+      $stmt = $pdo->prepare("UPDATE `licenses` SET `license_$selectedLanguage` = :license, `description_$selectedLanguage` = :description WHERE `id` = :id");
       $stmt->execute([
         ':license' => $license,
         ':description' => $description,
         ':id' => $pointId
       ]);
     } else {
-      // Handle work_experience and education points
+      // Handle Hard/Soft skills, work_experience and education points
       if ($editedPoint === null) {
         echo json_encode(['status' => 'error', 'message' => 'Skill value missing']);
         exit();
       }
-      error_log('call: ' . $call);
       $stmt = $pdo->prepare("UPDATE `$call` SET `skill_$selectedLanguage` = :skill WHERE `id` = :id");
       $stmt->execute([':skill' => $editedPoint, ':id' => $pointId]);
     }

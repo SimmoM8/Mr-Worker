@@ -34,30 +34,30 @@ const Resumes = {
 
     // Toggle the collapsible content when clicking the toggle icon
     $(document).off('click', '.toggle-container').on('click', '.toggle-container', function (event) {
-        event.stopPropagation(); // Prevent click from bubbling up to the header
-        const content = $(this).closest('.experience_card').find('.collapsible-content');
+      event.stopPropagation(); // Prevent click from bubbling up to the header
+      const content = $(this).closest('.experience_card').find('.collapsible-content');
 
-        if (content.length) {
-            content.slideToggle(300); // Toggle with animation
-            $(this).find('.toggle-icon').toggleClass('bi-chevron-down bi-chevron-up'); // Toggle arrow icon
-        }
+      if (content.length) {
+        content.slideToggle(300); // Toggle with animation
+        $(this).find('.toggle-icon').toggleClass('bi-chevron-down bi-chevron-up'); // Toggle arrow icon
+      }
     });
 
     // Toggle checkbox & selection when clicking the experience header or checkbox
     $(document).off('click', '.experience-header, .experience-checkbox')
-        .on('click', '.experience-header, .experience-checkbox', function (event) {
-            // Ensure the toggle icon click doesn't trigger checkbox toggle
-            if ($(event.target).closest('.toggle-container, .toggle-icon').length) {
-                return;
-            }
+      .on('click', '.experience-header, .experience-checkbox', function (event) {
+        // Ensure the toggle icon click doesn't trigger checkbox toggle
+        if ($(event.target).closest('.toggle-container, .toggle-icon').length) {
+          return;
+        }
 
-            const checkbox = $(this).closest('.experience-header').find('.experience-checkbox');
-            checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
-        });
+        const checkbox = $(this).closest('.experience-header').find('.experience-checkbox');
+        checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+      });
 
     // Apply border effect when checkbox is toggled
     $(document).off('change', '.experience-checkbox').on('change', '.experience-checkbox', function () {
-        $(this).closest('.experience_card').toggleClass('selected', this.checked);
+      $(this).closest('.experience_card').toggleClass('selected', this.checked);
     });
   },
 
@@ -191,9 +191,8 @@ const Resumes = {
                       .map(
                         (i) => `
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="${t}_${i.skill_id}" value="${i.skill_id}" name="${t}[]" ${
-                        selectedIds.includes(String(i.skill_id)) ? 'checked' : ''
-                      }>
+                          <input class="form-check-input" type="checkbox" id="${t}_${i.skill_id}" value="${i.skill_id}" name="${t}[]" ${selectedIds.includes(String(i.skill_id)) ? 'checked' : ''
+                          }>
                           <label class="form-check-label" for="${t}_${i.skill_id}">${i.skill_name}</label>
                         </div>
                       `
@@ -328,7 +327,7 @@ const Resumes = {
 
         // Validate the parsed content
         const newCard = template.firstChild;
-		  
+
         // Find the parent `.col` containing #card-new_resume
         const addResumeCard = document.querySelector('.col #card-new_resume');
         const addResumeCol = addResumeCard ? addResumeCard.parentNode : null;
@@ -364,9 +363,33 @@ const Resumes = {
   },
 
   fetchResumes: function () {
-    Resumes.handleAjax('fetch-resumes.php', null, 'GET', (data) => {
+    const translate_mode = Resumes.translateMode || false;
+    console.log("translate mode: ", translate_mode);
+    Resumes.handleAjax('fetch-resumes.php', { translate_mode: translate_mode }, 'GET', (data) => {
       const resumesGrid = $('.resumes-grid');
       resumesGrid.html(data); // Inject pre-rendered HTML
     });
+  },
+
+  handleTranslationSave: function (event) {
+    const input = $(event.currentTarget).siblings('.translate-input');
+    const column = input.data("column");
+    const call = input.data("call");
+    const id = input.data('id');
+    const inputValue = input.val().trim();
+
+    if (inputValue) {
+      this.ajaxRequest(
+        'update-translation.php',
+        'POST',
+        {
+          id,
+          call,
+          column,
+          inputValue
+        },
+        () => alert('Translation saved!')
+      );
+    }
   },
 };

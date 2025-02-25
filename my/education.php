@@ -9,8 +9,7 @@
 </section>
 <?php include 'modal-experience.php'; ?>
 <script>
-    console.log("Inline script in education.php executed");
-    if (typeof Experience !== "undefined" && Experience.init) {
-      Experience.init(); // Initialize Experience.js for this page
-    }
-  </script> 
+  if (typeof Experience !== "undefined" && Experience.init) {
+    Experience.init(); // Initialize Experience.js for this page
+  }
+</script>

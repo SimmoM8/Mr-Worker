@@ -1,5 +1,4 @@
 <script src="../js/profile-picture.js"></script>
-<script src="../js/profile.js"></script>
 
 <section class="dashboard container-fluid">
   <div class="background-icon"><i class="fa-solid fa-user-tie"></i></div>
@@ -151,3 +150,8 @@
     </div>
   </div>
 </section>
+<script>
+  if (typeof Profile !== "undefined" && Profile.init) {
+    Profile.init(); // Initialize profile.js for this page
+  }
+</script>

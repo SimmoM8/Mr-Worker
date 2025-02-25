@@ -10,10 +10,8 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
-error_log("Test: ");
 // Set the selected language
 $selectedLanguage = $_SESSION['selected_language'] ?? 'lang_1'; // Default to lang_1 if not set
-error_log("Selected Language: " . $selectedLanguage);
 
 require '../db.php'; // Include the PDO connection
 
@@ -30,21 +28,20 @@ $userId = $_SESSION['user_id'];
 $responseData = [];
 
 try {
-  error_log("Call: " . $call);
   // Dynamic queries based on call type
   if (in_array($call, ['hard_skills', 'soft_skills'])) {
     // Fetch skills
-    $stmt = $pdo->prepare("SELECT id, `skill_$selectedLanguage` AS skill FROM `$call` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, skill_lang_1 AS ref_skill, `skill_$selectedLanguage` AS skill FROM `$call` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $responseData = ($stmt->fetchAll(PDO::FETCH_ASSOC));
   } elseif ($call === 'languages') {
     // Fetch languages
-    $stmt = $pdo->prepare("SELECT id, `language_$selectedLanguage` AS language, percentage FROM `languages` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, language_lang_1 AS ref_language, `language_$selectedLanguage` AS language, percentage FROM `languages` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $responseData = ($stmt->fetchAll(PDO::FETCH_ASSOC));
   } elseif ($call === 'licenses') {
     // Fetch licenses
-    $stmt = $pdo->prepare("SELECT id, `license_$selectedLanguage` AS license, `description_$selectedLanguage` AS description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
+    $stmt = $pdo->prepare("SELECT id, license_lang_1 AS ref_license, description_lang_1 AS ref_description, `license_$selectedLanguage` AS license, `description_$selectedLanguage` AS description FROM `licenses` WHERE `user_id` = :user_id ORDER BY `id` ASC");
     $stmt->execute([':user_id' => $userId]);
     $responseData = ($stmt->fetchAll(PDO::FETCH_ASSOC));
   } else {
@@ -103,12 +100,6 @@ try {
     'null_message' => '- Enter translate mode to type translation -',
     'data' => $responseData,  // ✅ Always an array
   ];
-
-  //error_log("Response: " . print_r($response, true));
-
-  error_log("Test: ");
-  error_log("Response: " . json_encode($response));
-
 
   echo json_encode($response);
 } catch (PDOException $e) {

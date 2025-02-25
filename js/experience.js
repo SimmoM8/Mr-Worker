@@ -99,9 +99,6 @@ const Experience = {
         container.append(addExperienceHTML);
 
         if (Array.isArray(experiences)) {
-          experiences.sort((a, b) => a.order - b.order); // Sort by order
-
-          console.log("Experience:", experiences, "Call:", call);
           // Loop through each experience and render the card
           experiences.forEach((experience) =>
             container.append(Experience.renderExperienceCard(experience, call, nullMessage))

@@ -10,10 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 $selectedLanguage = $_SESSION['selected_language'] ?? 'lang_1'; // Default to lang_1 if not set
 $translateMode = $_GET['translate_mode'];
 
-error_log("Get: " . print_r($_GET, true));
-
-error_log("Translate mode: " . $translateMode);
-
 require '../db.php';
 
 try {

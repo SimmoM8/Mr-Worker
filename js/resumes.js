@@ -31,31 +31,22 @@ const Resumes = {
     $(document).on('click', '#submitBtn', () => Resumes.handleAjax('update_session.php', $('#modal_resume form').serialize(), 'POST', Resumes.nextTab));
     $(document).on('click', '#updateBtn', () => Resumes.handleAjax('update_session.php', $('#modal_resume form').serialize(), 'POST', Resumes.handleUpdateResume));
 
-
-    // Toggle the collapsible content when clicking the toggle icon
+    // Toggle the collapsible content
     $(document).off('click', '.toggle-container').on('click', '.toggle-container', function (event) {
-      event.stopPropagation(); // Prevent click from bubbling up to the header
+      event.stopPropagation();
       const content = $(this).closest('.experience_card').find('.collapsible-content');
-
       if (content.length) {
-        content.slideToggle(300); // Toggle with animation
-        $(this).find('.toggle-icon').toggleClass('bi-chevron-down bi-chevron-up'); // Toggle arrow icon
+        content.slideToggle(300);
+        $(this).find('.toggle-icon').toggleClass('bi-chevron-down bi-chevron-up');
       }
     });
 
-    // Toggle checkbox & selection when clicking the experience header or checkbox
-    $(document).off('click', '.experience-header, .experience-checkbox')
-      .on('click', '.experience-header, .experience-checkbox', function (event) {
-        // Ensure the toggle icon click doesn't trigger checkbox toggle
-        if ($(event.target).closest('.toggle-container, .toggle-icon').length) {
-          return;
-        }
+    $(document).off('click', '.experience-header, .experience-checkbox').on('click', '.experience-header, .experience-checkbox', function (event) {
+      if ($(event.target).closest('.toggle-container, .toggle-icon').length) return;
+      const checkbox = $(this).closest('.experience-header').find('.experience-checkbox');
+      checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+    });
 
-        const checkbox = $(this).closest('.experience-header').find('.experience-checkbox');
-        checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
-      });
-
-    // Apply border effect when checkbox is toggled
     $(document).off('change', '.experience-checkbox').on('change', '.experience-checkbox', function () {
       $(this).closest('.experience_card').toggleClass('selected', this.checked);
     });
@@ -137,7 +128,7 @@ const Resumes = {
 
   // Fetch and generate skills and experience for adding or editing a resume
   fetchAndGenerateList: function (types) {
-
+    console.log("types: ", types);
     // First, fetch session data for selected IDs
     $.ajax({
       url: 'get_session.php',
@@ -159,6 +150,23 @@ const Resumes = {
               call: t,
             },
             success: (data) => {
+              let parsedData;
+              try {
+                parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+              } catch (e) {
+                console.error(`Failed to parse JSON for ${t}:`, data);
+                return;
+              }
+
+              // Extract the actual array if it's wrapped inside a 'data' object
+              const dataArray = Array.isArray(parsedData.data) ? parsedData.data : parsedData;
+
+              if (!Array.isArray(dataArray)) {
+                console.error(`Expected an array but received for ${t}:`, parsedData);
+                return;
+              }
+
+              console.log(`Fetched ${t} data:`, dataArray);
 
               const container = $(`#fetched-${t}`);
               container.empty();
@@ -166,36 +174,32 @@ const Resumes = {
               // Ensure session[t] is a string or fallback to an empty string
               const selectedIds = (session[t] || '').toString().split(',');
 
-              data.forEach((item) => {
+              dataArray.forEach((item) => {
                 if (['hard_skills', 'soft_skills', 'languages', 'licenses'].includes(t)) {
                   // Render for Skills Tab
                   const isChecked = selectedIds.includes(String(item.id)) ? 'checked' : '';
 
                   container.append(`
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="${t}_${item.id}" value="${item.id}" name="${t}[]" ${isChecked}>
-                    <label class="form-check-label" for="${t}_${item.id}">${item.language_lang_1 || item.license_lang_1 || item.skill_lang_1}</label>
-                  </div>
-                `);
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="${t}_${item.id}" value="${item.id}" name="${t}[]" ${isChecked}>
+          <label class="form-check-label" for="${t}_${item.id}">${item.language || item.license || item.skill}</label>
+        </div>
+      `);
                 } else if (['work_experience', 'education'].includes(t)) {
                   const p = t === 'education' ? 'courses' : 'employers';
-                  // Ensure session[p] is a string or fallback to an empty string
                   const selectedHeaderIds = (session[p] || '').toString().split(',');
-                  // Render for Work Experience / Education Tabs
                   const isChecked = selectedHeaderIds.includes(String(item.id)) ? 'checked' : '';
                   let skillsHtml = '';
 
-                  if (item.skills && item.skills.length > 0) {
-                    // Generate HTML for each skill within work experience or education
+                  if (item.skills && Array.isArray(item.skills)) {
                     skillsHtml = item.skills
                       .map(
                         (i) => `
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="${t}_${i.skill_id}" value="${i.skill_id}" name="${t}[]" ${selectedIds.includes(String(i.skill_id)) ? 'checked' : ''
-                          }>
-                          <label class="form-check-label" for="${t}_${i.skill_id}">${i.skill_name}</label>
-                        </div>
-                      `
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="${t}_${i.skill_id}" value="${i.skill_id}" name="${t}[]" ${selectedIds.includes(String(i.skill_id)) ? 'checked' : ''}>
+                <label class="form-check-label" for="${t}_${i.skill_id}">${i.skill_name}</label>
+              </div>
+            `
                       )
                       .join('');
                   } else {
@@ -203,31 +207,27 @@ const Resumes = {
                   }
 
                   container.append(`
-                  <div class="experience_card card card-colored mb-3 ${isChecked ? 'selected' : ''}">
-                    <div class="experience-header card-body">
-                      <h5 class="card-title">${item.title}</h5>
-                      <p class="">${item.organization}</p>
-
-                      <!-- Checkbox Positioned to the Right -->
-                      <div class="checkbox-container">
-                        <p style="margin: 0px;">
-                          <small class="text-muted">${item.start_date} - ${item.end_date}</small>
-                        </p>
-                          <input class="form-check-input experience-checkbox" type="checkbox" id="checkbox_${item.id}" value="${item.id}" name="${p}[]" ${isChecked}>
-                      </div>
-
-                      <!-- Toggle Icon Positioned at the Bottom Center -->
-                      <div class="toggle-container">
-                          <i class="bi bi-chevron-down toggle-icon"></i>
-                      </div>
-                    </div>
-
-                    <div class="collapsible-content">${skillsHtml}</div>
-                  </div>
-                `);
+        <div class="experience_card card card-colored mb-3 ${isChecked ? 'selected' : ''}">
+          <div class="experience-header card-body">
+            <h5 class="card-title">${item.title}</h5>
+            <p class="">${item.organization}</p>
+            <div class="checkbox-container">
+              <p style="margin: 0px;">
+                <small class="text-muted">${item.start_date} - ${item.end_date}</small>
+              </p>
+              <input class="form-check-input experience-checkbox" type="checkbox" id="checkbox_${item.id}" value="${item.id}" name="${p}[]" ${isChecked}>
+            </div>
+            <div class="toggle-container">
+              <i class="bi bi-chevron-down toggle-icon"></i>
+            </div>
+          </div>
+          <div class="collapsible-content">${skillsHtml}</div>
+        </div>
+      `);
                 }
               });
             },
+
             error: (xhr) => console.error(`Error fetching ${t} data:`, xhr.responseText),
           });
         });
@@ -235,6 +235,7 @@ const Resumes = {
       error: (xhr) => console.error("Failed to fetch session data:", xhr.responseText),
     });
   },
+
 
   switchTab: function (nextTab) {
     if (!Resumes.currentTab) {

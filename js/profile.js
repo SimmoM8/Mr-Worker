@@ -42,10 +42,7 @@ const Profile = {
     this.profileImagePreview.on('click', '.overlay', function () {
       Profile.openEditModal();
     });
-
-    $('#saveProfilePictureButton').on('click', function () {
-      Profile.saveProfilePicture();
-    });
+    $('#saveProfilePictureButton').off().on('click', () => this.saveProfilePicture());
 
     $(this.editableImageContainerId).on('mousedown', 'img', function (e) {
       Profile.handleDragStart(e);
@@ -59,28 +56,15 @@ const Profile = {
       Profile.rotateImage();
     });
 
-    $('#uploadFileButton').on('click', function () {
-      Profile.uploadImage();
-    });
+    $('#uploadFileButton').off().on('click', () => this.uploadImage());
+    $('#profileForm').off().on('submit', (e) => this.saveProfileData(e));
 
-    $('#profileForm').on('submit', function (e) {
-      Profile.saveProfileData(e);
-    });
-
-    // Toggle edit mode for fields
-    $('.edit-btn').on('click', function () {
+    $('.edit-btn').off().on('click', function () {
       const groupSelector = $(this).closest('.col-12');
-      if ($(this).hasClass('cancel-btn')) {
-        Profile.toggleEditMode(groupSelector, false);
-      } else {
-        Profile.toggleEditMode(groupSelector, true);
-      }
+      Profile.toggleEditMode(groupSelector, !$(this).hasClass('cancel-btn'));
     });
 
-    // Save translation button event
-    $(document).on('click', '.save-translation', function () {
-      Profile.saveTranslation();
-    });
+    $(document).off('click', '.save-translation').on('click', '.save-translation', () => this.saveTranslation());
 
     document.getElementById('editImageModal').addEventListener('shown.bs.modal', Profile.updateMaskSize);
     window.addEventListener('resize', Profile.updateMaskSize);

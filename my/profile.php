@@ -3,7 +3,6 @@
 <section class="dashboard container-fluid">
   <div class="background-icon"><i class="fa-solid fa-user-tie"></i></div>
   <div class="container">
-    <h5 class="text-muted">Name's Resumes</h5>
     <h1>Profile</h1>
     <!-- Profile Form -->
     <form id="profileForm">

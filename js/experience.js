@@ -214,7 +214,7 @@ const Experience = {
     const containerId =
       section === "work_experience" ? "#employers" : "#courses";
     const updatedOrder = [
-      ...document.querySelectorAll(`${containerId} .experience_card - container`),
+      ...document.querySelectorAll(`${containerId} .experience_card-container`),
     ].map((item, index) => ({
       id: item.getAttribute("id").split("_")[2],
       order: index + 1,

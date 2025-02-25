@@ -1,7 +1,6 @@
 <section class="dashboard container-fluid">
   <div class="background-icon"><i class="fa-solid fa-id-card"></i></div>
   <div class="container">
-    <h5 class="text-muted">Name's Resumes</h5>
     <h1>Skills</h1>
     <div class="row">
       <div class="col card card-colored card-body">

@@ -8,7 +8,6 @@
 <section class="dashboard container-fluid">
   <div class="background-icon"><i class="fa-solid fa-briefcase"></i></div>
   <div class="container">
-    <h5 class="text-muted">Name's Resumes</h5>
     <h1>Work Experience</h1>
     <div class="experience-container" id="employers"></div>
     <!-- Content is loaded in via javascript -->
@@ -17,7 +16,7 @@
   <?php include 'modal-experience.php'; ?>
 </section>
 <script>
-    if (typeof Experience !== "undefined" && Experience.init) {
-      Experience.init(); // Initialize Experience.js for this page
-    }
-  </script> 
+  if (typeof Experience !== "undefined" && Experience.init) {
+    Experience.init(); // Initialize Experience.js for this page
+  }
+</script>

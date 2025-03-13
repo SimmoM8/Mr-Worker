@@ -18,19 +18,19 @@
     <hr />
     <ul class="sidebar-nav nav nav-pills flex-column mb-auto">
       <li class="nav-item">
-        <a class="nav-link text-white active" data-page="resumes.php"><i class="fas fa-file-lines me-3"></i>Resumes</a>
+        <a class="nav-link text-white active" data-page="resumes"><i class="fas fa-file-lines me-3"></i>Resumes</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" data-page="work_experience.php"><i class="fas fa-briefcase me-3"></i>Work Experience</a>
+        <a class="nav-link text-white" data-page="experience" data-type="work"><i class="fas fa-briefcase me-3"></i>Work Experience</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" data-page="education.php"><i class="fa-solid fa-graduation-cap me-3"></i>Education</a>
+        <a class="nav-link text-white" data-page="experience" data-type="education"><i class="fa-solid fa-graduation-cap me-3"></i>Education</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" data-page="skills.php"><i class="fa-solid fa-id-card me-3"></i>Skills</a>
+        <a class="nav-link text-white" data-page="skills"><i class="fa-solid fa-id-card me-3"></i>Skills</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" data-page="profile.php"><i class="fa-solid fa-user-tie me-3"></i>Profile</a>
+        <a class="nav-link text-white" data-page="profile"><i class="fa-solid fa-user-tie me-3"></i>Profile</a>
       </li>
       <?php
       if ($_SESSION['user_id'] == '14') {

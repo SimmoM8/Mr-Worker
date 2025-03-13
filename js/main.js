@@ -1,39 +1,36 @@
+const apiRequest = async (table, action, data = {}, conditions = {}, options = {}) => {
+  try {
+    const response = await fetch('../api.php', {
+      method: 'POST',
+      body: JSON.stringify({
+        table,
+        action,
+        data,
+        conditions,
+        ...options
+      }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      console.error("API Error:", result.message);
+    }
+    return result;
+  } catch (error) {
+    console.error("API Request Failed:", error);
+    return { success: false, message: "Network error." };
+  }
+};
+
+
 document.addEventListener("DOMContentLoaded", function () {
-  const navButtons = document.querySelectorAll(".sidebar-nav .nav-link"); // Select all sidebar buttons
-  const mainContent = document.getElementById("main-content"); // The main content area
 
   // Initial page load based on URL
   const urlParams = new URLSearchParams(window.location.search);
-  const initialPage = urlParams.get("page") || "resumes.php"; // Default to resumes.php
-  loadPage(initialPage); // Load the initial page
-
-  // Function to dynamically load content
-  function loadPage(page) {
-    mainContent.innerHTML = "<p>Loading...</p>"; // Show loading message
-
-    // AJAX request to fetch the page content
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", page, true);
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        // Inject the fetched content into the main-content div
-        mainContent.innerHTML = xhr.responseText;
-
-        // Re-execute scripts in the loaded content
-        executeScripts(mainContent);
-
-        // Update the active button
-        updateActiveButton(page);
-      } else {
-        mainContent.innerHTML = `<p>Error loading page: ${xhr.status}</p>`;
-      }
-    };
-    xhr.onerror = function () {
-      mainContent.innerHTML =
-        "<p>An error occurred while loading the page.</p>";
-    };
-    xhr.send();
-  }
+  const initialPage = urlParams.get("page") || "resumes.php";
+  const initialType = urlParams.get("type") || null;
+  NavigationManager.loadPage(initialPage, initialType); // Load the initial page
 
   /** LANGUAGE SELECTION **/
   const userLanguageSelector = document.getElementById("userLanguageSelector");
@@ -202,16 +199,9 @@ document.addEventListener("DOMContentLoaded", function () {
       showAddLanguageInput();
     } else {
       await updateSessionLanguage(userLanguageSelector.value);
-      reloadCurrentPage(); // 🔄 Reload the dynamic content based on selected language
+      NavigationManager.reloadCurrentPage(); // 🔄 Reload the dynamic content based on selected language
     }
   });
-
-  /** Reload the current page content dynamically **/
-  function reloadCurrentPage() {
-    const currentPage = new URLSearchParams(window.location.search).get("page") || "resumes.php";
-    console.log("Reloading current page...:", currentPage);
-    loadPage(currentPage);
-  }
 
   /** Update session language **/
   async function updateSessionLanguage(languageCode) {
@@ -357,60 +347,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 3000);
   }
 
-  // Function to re-execute scripts within loaded content
-  function executeScripts(container) {
-    const scripts = container.querySelectorAll("script");
-    scripts.forEach((script) => {
-      const newScript = document.createElement("script");
-      if (script.src) {
-        // For external scripts, copy the src attribute and load asynchronously
-        newScript.src = script.src;
-        newScript.async = false; // Ensure execution order is maintained
-      } else {
-        // For inline scripts, copy the script content
-        newScript.textContent = script.textContent;
-      }
-      document.body.appendChild(newScript); // Append and execute the script
-    });
-  }
-
-  // Function to update active button
-  function updateActiveButton(page) {
-    navButtons.forEach((button) => {
-      if (button.getAttribute("data-page") === page) {
-        button.classList.add("active");
-      } else {
-        button.classList.remove("active");
-      }
-    });
-  }
-
-  // Add click event listeners to sidebar buttons
-  navButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const page = this.getAttribute("data-page");
-
-      // Update the browser URL
-      window.history.pushState(
-        {
-          page: page,
-        },
-        "",
-        `?page=${page}`
-      );
-
-      // Load the selected page
-      loadPage(page);
-    });
-  });
-
-  // Handle browser back/forward navigation
-  window.addEventListener("popstate", function (event) {
-    if (event.state && event.state.page) {
-      loadPage(event.state.page); // Load the page from history state
-    }
-  });
-
   // Event Listener for Translate Mode Toggle Switch
   document.getElementById("translateModeSwitch").addEventListener("change", function () {
     Experience.translateMode = this.checked; // Enable/disable based on switch state
@@ -420,8 +356,6 @@ document.addEventListener("DOMContentLoaded", function () {
     //console.log("Translate Mode:", Experience.translateMode ? "Enabled" : "Disabled");
 
     // Refresh the content to apply translations dynamically
-    reloadCurrentPage();
+    NavigationManager.reloadCurrentPage();
   });
-
-
 });

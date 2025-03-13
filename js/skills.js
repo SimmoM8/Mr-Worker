@@ -22,50 +22,59 @@ const Skills = {
 
   fetchSkills: function (categories) {
 
+    // Fetch data for multiple tables (categories)
     categories.forEach(category => {
-      this.ajaxRequest('fetch.php', 'GET', { call: category }, response => {
-        const selectedLanguage = response.selected_language;
-        const nullMessage = response.null_message;
-        const skillList = response.data;
-        const skillContainer = $(`#${category}`);
+      apiRequest(category, "fetch")
+        .then(response => {
+          if (response.success) {
+            console.log(`Skills fetched for ${category}:`, response);
+            const skillContainer = $(`#${category}`);
+            skillContainer.empty();
 
-        skillContainer.empty();
-
-        skillList.forEach(skill => {
-          skillContainer.append(
-            category === "licenses"
-              ? this.createLicenseItem(skill, category)
-              : category === "languages"
-                ? this.createLanguageSkill(skill, category)
-                : this.createSkillItem(skill, category)
-          );
-        });
-      });
+            response.data.forEach(skill => {
+              skillContainer.append(
+                category === "licenses"
+                  ? Skills.createLicenseItem(skill, category, response.sel_language, response.ref_language)
+                  : category === "languages"
+                    ? Skills.createLanguageSkill(skill, category, response.sel_language, response.ref_language)
+                    : Skills.createSkillItem(skill, category, response.sel_language, response.ref_language)
+              );
+            });
+          } else {
+            console.error(`Error fetching skills for ${category}:`, response.message);
+          }
+        }).catch(error => console.error(`API Request Failed for ${category}:`, error));
     });
   },
 
-  createSkillItem: function (skill, call) {
+
+  createSkillItem: function (skill, call, ref, sel) {
+    ref_skill = skill[`skill_${ref}`]; // Reference skill
+    skill = skill[`skill_${sel}`] || ref_skill; // Translated skill
+    console.log('skill: ', skill);
     return `
       <li class="skill-item list-group-item list-group-item-action" style="align-items: center;" data-id="${skill.id}">
         <div class="d-flex">
           <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
             <i class="fas fa-square-minus"></i>
           </button>
-          <span class="point-text ${!skill.skill || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? skill.ref_skill : skill.skill || skill.ref_skill}</span>
+          <span class="point-text ${!skill || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_skill : skill || ref_skill}</span>
         </div>
-        ${this.renderTranslationInput(skill.id, "skill", skill.skill, call)}
+        ${this.renderTranslationInput(skill.id, "skill", skill, call)}
       </li>
     `;
   },
 
-  createLanguageSkill: function (skill, call) {
+  createLanguageSkill: function (skill, call, sel, ref) {
+    ref_skill = skill[`language_${ref}`]; // Reference skill
+    skill = skill[`language_${sel}`] || ref_skill; // Translated skill
     return `
       <li class="skill-item list-group-item" data-id="${skill.id}" data-percentage="${skill.percentage}">
         <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
           <i class="fas fa-square-minus"></i>
         </button>
-        <span class="${!skill.language || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? skill.ref_language : skill.language || skill.ref_language} - <span class="percentage-display">${skill.percentage}</span>%</span>
-        ${this.renderTranslationInput(skill.id, "language", skill.language, call)}
+        <span class="${!skill || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_skill : skill || ref_skill} - <span class="percentage-display">${skill.percentage}</span>%</span>
+        ${this.renderTranslationInput(skill.id, "language", skill, call)}
         <div class="progress mt-2 position-relative">
           <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%;"></div>
           <input type="range" class="form-range language-slider position-absolute w-100" min="0" max="100" value="${skill.percentage}" style="opacity: 0; transition: opacity 0.2s;">
@@ -74,15 +83,23 @@ const Skills = {
     `;
   },
 
-  createLicenseItem: function (license, call) {
+  createLicenseItem: function (license, call, ref, sel) {
+
+    console.log('license: ', license);
+
+    ref_license = license[`license_${ref}`];
+    license = license[`license_${sel}`] || ref_license;
+    ref_description = license[`description_${ref}`];
+    description = license[`description_${sel}`] || ref_description;
+
     return `
       <li class="skill-item list-group-item" data-id="${license.id}">
         <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
           <i class="fas fa-trash-alt"></i>
         </button>
-        <span class="license-name ${!license.license || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? license.ref_license : license.license || license.ref_license}</span>
+        <span class="license-name ${!license.license || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_license : license || ref_license}</span>
         ${this.renderTranslationInput(license.id, "license", license.license, call)}
-        <p class="license-description ${!license.description || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? license.ref_description : license.description || license.ref_description}</p>
+        <p class="license-description ${!license.description || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_description : description || ref_description}</p>
         ${this.renderTranslationInput(license.id, "description", license.description, call)}
       </li>
     `;

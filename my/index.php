@@ -100,6 +100,7 @@ if (!isset($_SESSION['user_id'])) {
       rows="4"></textarea>
     <button id="submitReport" name="submitReport" class="btn btn-primary">Submit</button>
   </form>
+  <script src="../js/navigation.js"></script>
   <script src="../js/main.js"></script>
   <script src="../js/experience.js" defer></script>
   <script src="../js/skills.js" defer></script>

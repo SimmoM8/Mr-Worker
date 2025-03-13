@@ -3,6 +3,7 @@
 require_once 'db.php'; // Include the database connection
 function executeQuery($queryType, $query, $params = [], $fetchMode = 'fetchAll')
 {
+    error_log('Executing query: ' . $query); // Log the query
     global $pdo;
 
     // Execute the query

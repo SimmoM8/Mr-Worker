@@ -6,14 +6,14 @@ $input = htmlspecialchars(trim($_POST['username'])); // Can be either username o
 $password = $_POST['password'];
 
 if (!$input || !$password) {
-    echo 'Username/email and password are required.';
+    echo 'Email and password are required.';
     exit;
 }
 
 try {
     // Check if input matches either username or email
-    $stmt = $pdo->prepare('SELECT id, password FROM users WHERE username = ? OR email = ?');
-    $stmt->execute([$input, $input]);
+    $stmt = $pdo->prepare('SELECT id, password FROM users WHERE email = ?');
+    $stmt->execute([$input]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
@@ -24,5 +24,5 @@ try {
         echo 'Invalid username, email, or password.';
     }
 } catch (PDOException $e) {
-    echo 'An error occurred.';
+    echo 'An error occurred: ' . $e->getMessage();
 }

@@ -13,6 +13,7 @@ require_once '../db.php'; // Include db.php for the PDO connection
 
 $card_id = $_POST['card_id'];
 $user_id = $_SESSION['user_id'];
+$selected_language = $_SESSION['selected_language'];
 
 // RESUME DATA
 
@@ -26,7 +27,7 @@ if (!$resumes) {
 }
 
 $id = $resumes['id'];
-$title = $resumes['job_position_lang_1'];
+$title = $resumes["job_position_$selected_language"];
 $language = 'en';
 $color1 = hexToRgb($resumes['grad_color_1']);
 $color2 = hexToRgb($resumes['grad_color_2']);
@@ -68,7 +69,7 @@ $name = $first_name . " " . $last_name;
 $mobile = "(+" . $profile['country_code'] . ") " . $profile['mobile'];
 $address = $profile['street'] . "\n" . $profile['town'] . " " . $profile['post_code'];
 $email = $profile['email'];
-$about_me = $profile['about_me_lang_1'];
+$about_me = $profile["about_me_$selected_language"];
 $img_scale = $profile['img_scale'];
 $img_pos_x = $profile['img_pos_x'];
 $img_pos_y = $profile['img_pos_y'];

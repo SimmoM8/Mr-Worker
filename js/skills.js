@@ -2,132 +2,186 @@
 const Skills = {
   translateMode: false,
 
+  // Initialization
   init: function () {
     const skillCategories = ["hard_skills", "soft_skills", "languages", "licenses"];
     this.fetchSkills(skillCategories);
     this.setupEventListeners();
   },
 
-  ajaxRequest: function (url, method, data, onSuccess) {
-    $.ajax({
-      url,
-      type: method,
-      data,
-      success: onSuccess,
-      error: function () {
-        console.error(`Error in ${url}`);
-      },
+  // Event bindings
+  setupEventListeners: function () {
+    const doc = $(document);
+
+    doc.off('click', '.save-translation')
+      .off('mouseover', '.progress')
+      .off('mouseout', '.progress')
+      .off('change', '.language-slider')
+      .off('click', '.edit-license')
+      .off('click', '.add-item-btn');
+
+    doc.on('click', '.save-translation', this.handleTranslationSave.bind(this))
+      .on('mouseover', '.progress', this.handleSliderHover)
+      .on('mouseout', '.progress', this.handleSliderLeave)
+      .on('change', '.language-slider', function (e) {
+        Skills.handleSliderChange.call(this, e);
+      })
+      .on('click', '.edit-license', this.handleLicenseEdit.bind(this))
+      .on("click", ".add-item-btn", function () {
+        const category = $(this).data("category");
+
+        switch (category) {
+          case "hard_skills":
+          case "soft_skills": {
+            SkillPointManager.add({
+              category,
+              input: $(`#input_${category}`).val().trim(),
+              selLang: selectedLanguage,
+              column: "skill",
+              onSuccess: (newLi) => {
+                $(`#${category}`).append(newLi);
+                $(`#input_${category}`).val(""); // clear input
+              }
+            });
+            break;
+          }
+          case "languages": {
+            const languageKey = `language_${selectedLanguage}`;
+            Skills.addItem("languages", {
+              [languageKey]: $("#input_languages").val().trim(),
+              percentage: 50
+            }, ["#input_languages"]);
+            break;
+          }
+          case "licenses": {
+            const licenseKey = `license_${selectedLanguage}`;
+            const descriptionKey = `description_${selectedLanguage}`;
+            Skills.addItem("licenses", {
+              [licenseKey]: $("#input_license").val().trim(),
+              [descriptionKey]: $("#input_license_description").val().trim()
+            }, ["#input_license", "#input_license_description"]);
+            break;
+          }
+          default:
+            console.warn(`Unknown category: ${category}`);
+        }
+      });
+
+    $('#licenseModalSave').off('click').on('click', Skills.submitLicenseModal);
+
+    // Combined delete handlers for languages and licenses
+    ["languages", "licenses"].forEach(category => {
+      doc.on('click', `#${category} .delete-point`, function () {
+        const id = $(this).data('id');
+        if (!id) return;
+        if (!confirm(`Are you sure you want to delete this ${category.slice(0, -1)}?`)) return;
+        apiRequest(category, "delete", {}, { id })
+          .then(response => {
+            if (response.success) {
+              Skills.fetchSkills([category]);
+            } else {
+              console.error(`Failed to delete ${category.slice(0, -1)}:`, response.message);
+            }
+          })
+          .catch(err => {
+            console.error(`Error deleting ${category.slice(0, -1)}:`, err);
+          });
+      });
     });
   },
 
+  // Fetch skills data for given categories
   fetchSkills: function (categories) {
-
-    // Fetch data for multiple tables (categories)
     categories.forEach(category => {
       apiRequest(category, "fetch")
         .then(response => {
           if (response.success) {
-            console.log(`Skills fetched for ${category}:`, response);
             const skillContainer = $(`#${category}`);
             skillContainer.empty();
 
-            response.data.forEach(skill => {
+            const skillList = response.data || [];
+            skillList.forEach(skill => {
               skillContainer.append(
-                category === "licenses"
-                  ? Skills.createLicenseItem(skill, category, response.sel_language, response.ref_language)
-                  : category === "languages"
-                    ? Skills.createLanguageSkill(skill, category, response.sel_language, response.ref_language)
-                    : Skills.createSkillItem(skill, category, response.sel_language, response.ref_language)
+                category === "licenses" ? Skills.renderLicenseItem(skill, category, response.sel_language, response.ref_language)
+                  : category === "languages" ? Skills.renderLanguageSkill(skill, category, response.sel_language, response.ref_language)
+                    : SkillPointManager.render({
+                      id: skill.id,
+                      column: "skill",
+                      valueObj: skill,
+                      refLang: response.ref_language,
+                      selLang: response.sel_language,
+                      call: category,
+                      isTranslateMode: Skills.translateMode
+                    })
               );
             });
+            SkillPointManager.updatePlaceholder(skillContainer, skillList.length > 0);
           } else {
-            console.error(`Error fetching skills for ${category}:`, response.message);
+            console.error(`Error fetching skills for ${category}: `, response.message);
           }
-        }).catch(error => console.error(`API Request Failed for ${category}:`, error));
+        }).catch(error => console.error(`Failed to fetch for ${category}: `, error));
     });
   },
 
-
-  createSkillItem: function (skill, call, ref, sel) {
-    ref_skill = skill[`skill_${ref}`]; // Reference skill
-    skill = skill[`skill_${sel}`] || ref_skill; // Translated skill
-    console.log('skill: ', skill);
+  // Rendering functions
+  renderLanguageSkill: function (language, call, sel, ref) {
+    const ref_language = language[`language_${ref}`]; // Reference language
+    const languageValue = language.language[sel] || ref_language; // Translated language
     return `
-      <li class="skill-item list-group-item list-group-item-action" style="align-items: center;" data-id="${skill.id}">
-        <div class="d-flex">
-          <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
-            <i class="fas fa-square-minus"></i>
-          </button>
-          <span class="point-text ${!skill || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_skill : skill || ref_skill}</span>
-        </div>
-        ${this.renderTranslationInput(skill.id, "skill", skill, call)}
-      </li>
-    `;
-  },
-
-  createLanguageSkill: function (skill, call, sel, ref) {
-    ref_skill = skill[`language_${ref}`]; // Reference skill
-    skill = skill[`language_${sel}`] || ref_skill; // Translated skill
-    return `
-      <li class="skill-item list-group-item" data-id="${skill.id}" data-percentage="${skill.percentage}">
-        <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${skill.id}">
+      <li class="skill-item list-group-item" data-id="${language.id}" data-call="${call}">
+        <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${language.id}">
           <i class="fas fa-square-minus"></i>
         </button>
-        <span class="${!skill || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_skill : skill || ref_skill} - <span class="percentage-display">${skill.percentage}</span>%</span>
-        ${this.renderTranslationInput(skill.id, "language", skill, call)}
+        <span class="${!languageValue || Skills.translateMode ? 'null_message' : ''} point-text">${Skills.translateMode ? ref_language : languageValue || ref_language} - <span class="percentage-display">${language.percentage}</span>%</span>
+        ${this.renderTranslationInput(language.id, "language", languageValue, call)}
         <div class="progress mt-2 position-relative">
-          <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%;"></div>
-          <input type="range" class="form-range language-slider position-absolute w-100" min="0" max="100" value="${skill.percentage}" style="opacity: 0; transition: opacity 0.2s;">
+          <div class="progress-bar" role="progressbar" style="width: ${language.percentage}%;"></div>
+          <input type="range" class="form-range language-slider position-absolute w-100" min="0" max="100" value="${language.percentage}" data-category="languages" data-id="${language.id}" data-percentage="${language.percentage}" style="opacity: 0; transition: opacity 0.2s;">
         </div>
       </li>
     `;
   },
 
-  createLicenseItem: function (license, call, ref, sel) {
-
-    console.log('license: ', license);
-
-    ref_license = license[`license_${ref}`];
-    license = license[`license_${sel}`] || ref_license;
-    ref_description = license[`description_${ref}`];
-    description = license[`description_${sel}`] || ref_description;
+  renderLicenseItem: function (license, call, ref, sel) {
+    const ref_license = license[`license_${ref}`];
+    const licenseValue = license.license[sel] || ref_license;
+    const ref_description = license[`description_${ref}`];
+    const descriptionValue = license.description[sel] || ref_description;
 
     return `
-      <li class="skill-item list-group-item" data-id="${license.id}">
+      <li class="skill-item list-group-item" data-id="${license.id}" data-call="${call}">
         <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
           <i class="fas fa-trash-alt"></i>
         </button>
-        <span class="license-name ${!license.license || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_license : license || ref_license}</span>
-        ${this.renderTranslationInput(license.id, "license", license.license, call)}
-        <p class="license-description ${!license.description || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_description : description || ref_description}</p>
-        ${this.renderTranslationInput(license.id, "description", license.description, call)}
+        <span class="license-name ${!licenseValue || Skills.translateMode ? 'null_message' : ''} point-text">${Skills.translateMode ? ref_license : licenseValue || ref_license}</span>
+        ${this.renderTranslationInput(license.id, "license", licenseValue, call)}
+        <p class="license-description ${!descriptionValue || Skills.translateMode ? 'null_message' : ''}">${Skills.translateMode ? ref_description : descriptionValue || ref_description}</p>
+        ${this.renderTranslationInput(license.id, "description", descriptionValue, call)}
+        <button class="btn btn-primary btn-sm edit-license">Edit</button>
       </li>
     `;
   },
 
-  renderTranslationInput: function (id, column, value, call) {
-    if (this.translateMode) {
-      return `
-        <div class="d-flex align-items-center mt-2">
-          <input type="text" class="form-control translate-input" placeholder="Enter translation" value="${value || ''}" data-id="${id}" data-column="${column}" data-call="${call}">
-          <button class="btn btn-success btn-sm ms-2 save-translation" data-id="${id}" data-column="${column}" data-call="${call}">Save</button>
-        </div>
-      `;
+  // Add new skill item
+  addItem: function (category, inputs, clearSelectors) {
+    const missing = Object.values(inputs).some(input => !input || input === '');
+    if (missing) {
+      alert("Please fill in all fields!");
+      return;
     }
-    return '';
+
+    apiRequest(category, "insert", inputs)
+      .then(response => {
+        if (response.success) {
+          this.fetchSkills([category]);
+          clearSelectors.forEach(sel => $(sel).val("")); // Clear input fields
+        } else {
+          console.error(`Error adding item to ${category}: `, response.message);
+        }
+      }).catch(error => console.error(`Failed to add item to ${category}: `, error));
   },
 
-  setupEventListeners: function () {
-    $(document)
-      .on('click', '.delete-point', this.handleSkillDelete.bind(this))
-      .on('click', '.save-translation', this.handleTranslationSave.bind(this))
-      .on('mouseover', '.progress', this.handleSliderHover)
-      .on('mouseout', '.progress', this.handleSliderLeave)
-      .on('input', '.language-slider', this.handleSliderChange.bind(this))
-      .on('click', '.skill-item', this.handleSkillEdit.bind(this))
-      .on('click', '.edit-license', this.handleLicenseEdit.bind(this));
-  },
-
+  // Slider hover handlers
   handleSliderHover: function () {
     const slider = $(this).find('.language-slider');
     slider.css('opacity', 1);
@@ -138,123 +192,87 @@ const Skills = {
     slider.css('opacity', 0);
   },
 
-  handleSliderChange: function () {
+  // Slider change handler
+  handleSliderChange: async function () {
     const slider = $(this);
     const skillItem = slider.closest('.skill-item');
     const newPercentage = slider.val();
-    const skillId = skillItem.data('id');
+    const skillId = slider.data('id');
+    const category = slider.data('category');
 
     skillItem.find('.percentage-display').text(newPercentage);
     skillItem.find('.progress-bar').css('width', `${newPercentage}%`);
 
-    this.ajaxRequest(
-      'update-point.php',
-      'POST',
-      {
-        pointId: skillId,
-        call: 'languages',
-        percentage: newPercentage,
+    if (!skillId || !category) return;
+
+    try {
+      const response = await apiRequest(category, "update", {
+        percentage: newPercentage
+      }, { id: skillId });
+
+      if (!response.success) {
+        console.error("Failed to update percentage:", response.message);
       }
-    );
+    } catch (error) {
+      console.error("Slider change failed:", error);
+    }
   },
 
-  addSkill: function (category) {
-    const inputSelector = `#input_${category}`;
-    const inputValue = $(inputSelector).val().trim();
-    if (!inputValue) {
-      alert("Please enter a value!");
+  // Edit license modal
+  handleLicenseEdit: function (event) {
+    const licenseItem = $(event.currentTarget).closest('.skill-item');
+    const licenseId = licenseItem.data('id');
+    const licenseName = licenseItem.find('.license-name').text().trim();
+    const licenseDescription = licenseItem.find('.license-description').text().trim();
+
+    // Populate modal fields
+    $('#licenseModalLabel').text('Edit License');
+    $('#licenseModal').data('id', licenseId);
+    $('#licenseModalName').val(licenseName);
+    $('#licenseModalDescription').val(licenseDescription);
+
+    // Show modal
+    const licenseModal = new bootstrap.Modal(document.getElementById('licenseModal'));
+    licenseModal.show();
+  },
+
+  // Submit license modal changes
+  submitLicenseModal: function () {
+    const licenseId = $('#licenseModal').data('id');
+    const newName = $('#licenseModalName').val().trim();
+    const newDescription = $('#licenseModalDescription').val().trim();
+
+    if (!newName || !newDescription) {
+      alert("Please fill in both fields.");
       return;
     }
 
-    const postData = {
-      call: category,
-      input: inputValue
-    };
-
-    if (category === "languages") {
-      postData.input_2 = 50; // Default percentage
-    }
-
-    this.ajaxRequest(
-      'add-skill.php',
-      'POST',
-      postData,
-      () => {
-        this.fetchSkills([category]);
-        $(inputSelector).val('');
+    apiRequest("licenses", "update", {
+      [`license_${selectedLanguage}`]: newName,
+      [`description_${selectedLanguage}`]: newDescription
+    }, { id: licenseId }).then(response => {
+      if (response.success) {
+        $('#licenseModal').modal('hide');
+        Skills.fetchSkills(['licenses']);
+      } else {
+        alert("Failed to update license: " + response.message);
       }
-    );
-  },
-
-  handleSkillEdit: function (event) {
-    if ($(event.target).is('input, .delete-point') || Skills.translateMode) return;
-
-    const skillItem = $(event.currentTarget);
-    const pointText = skillItem.find('.point-text');
-    const originalValue = pointText.text().trim();
-
-    pointText.html(`<input type="text" class="skill-item-input form-control" value="${originalValue}">`);
-    const inputField = pointText.find('.skill-item-input');
-    inputField.focus();
-
-    inputField.on('blur keypress', (e) => {
-      if (e.type === 'blur' || (e.type === 'keypress' && e.which === 13)) {
-        const newValue = inputField.val().trim();
-
-        if (newValue && newValue !== originalValue) {
-          this.ajaxRequest(
-            'update-point.php',
-            'POST',
-            {
-              pointId: skillItem.data('id'),
-              call: skillItem.closest('ul').attr('id'),
-              editedPoint: newValue,
-            },
-            () => this.fetchSkills([skillItem.closest('ul').attr('id')])
-          );
-        } else {
-          pointText.text(originalValue);
-        }
-      }
+    }).catch(err => {
+      console.error("Error updating license:", err);
     });
   },
 
-  handleSkillDelete: function (event) {
-    const skillId = $(event.currentTarget).data('id');
-    const category = $(event.currentTarget).closest('ul').attr('id');
-    if (confirm('Are you sure you want to delete this skill?')) {
-      this.ajaxRequest(
-        'delete-point.php',
-        'POST',
-        { pointId: skillId, call: category },
-        () => this.fetchSkills([category])
-      );
+  // Render translation input if in translate mode
+  renderTranslationInput: function (id, column, value, call) {
+    if (this.translateMode) {
+      return `
+  <div class="d-flex align-items-center mt-2">
+    <input type="text" class="form-control translate-input" placeholder="Enter translation" value="${value || ''}" data-id="${id}" data-column="${column}" data-call="${call}">
+    <button class="btn btn-success btn-sm ms-2 save-translation" data-id="${id}" data-column="${column}" data-call="${call}">Save</button>
+  </div>
+  `;
     }
-  },
-
-  addLicense: function () {
-    const licenseName = $('#input_license').val().trim();
-    const licenseDescription = $('#input_license_description').val().trim();
-
-    if (!licenseName || !licenseDescription) {
-      alert("Please enter both a license name and description!");
-      return;
-    }
-
-    this.ajaxRequest(
-      'add-skill.php',
-      'POST',
-      {
-        call: 'licenses',
-        input: licenseName,
-        input_2: licenseDescription,
-      },
-      () => {
-        this.fetchSkills(['licenses']);
-        $('#input_license').val('');
-        $('#input_license_description').val('');
-      }
-    );
+    return '';
   },
 
   handleTranslationSave: function (event) {
@@ -277,35 +295,6 @@ const Skills = {
         () => alert('Translation saved!')
       );
     }
-  },
-  handleLicenseEdit: function (event) {
-    const licenseItem = $(event.currentTarget).closest('.skill-item');
-    const licenseName = licenseItem.find('.license-name').text().trim();
-    const licenseDescription = licenseItem.find('.license-description').text().trim();
-
-    licenseItem.find('.license-name').html(`<input type="text" class="form-control license-name-input" value="${licenseName}">`);
-    licenseItem.find('.license-description').html(`<input type="text" class="form-control license-description-input" value="${licenseDescription}">`);
-
-    $('.license-name-input, .license-description-input').on('blur keypress', function (e) {
-      if (e.type === 'blur' || (e.type === 'keypress' && e.which === 13)) {
-        const newName = licenseItem.find('.license-name-input').val().trim();
-        const newDescription = licenseItem.find('.license-description-input').val().trim();
-
-        if (newName && newDescription) {
-          Skills.ajaxRequest(
-            'update-point.php',
-            'POST',
-            {
-              pointId: licenseItem.data('id'),
-              call: 'licenses',
-              license: newName,
-              description: newDescription,
-            },
-            () => Skills.fetchSkills(['licenses'])
-          );
-        }
-      }
-    });
   }
 };
 

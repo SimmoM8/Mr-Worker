@@ -29,7 +29,7 @@ function getRecords($table, $conditions = [], $fetchMode = 'fetchAll', $columns 
     }
 
     // Add ORDER BY if specified
-    $orderClause = $orderBy ? "ORDER BY $orderBy" : "";
+    $orderClause = $orderBy ? "ORDER BY `$orderBy`" : "";
 
     // Add LIMIT and OFFSET if specified
     $limitClause = ($limit !== null) ? "LIMIT " . (int)$limit : "";
@@ -57,7 +57,14 @@ function insertRecord($table, $data)
         $params[":$key"] = $value;
     }
 
-    return executeQuery('INSERT', "INSERT INTO $table ($columns) VALUES ($placeholders)", $params, 'execute');
+    $result = executeQuery('INSERT', "INSERT INTO $table ($columns) VALUES ($placeholders)", $params, 'execute');
+
+    if ($result['success']) {
+        $result['data'] = ['id' => $GLOBALS['pdo']->lastInsertId()];
+        $result['message'] = "Insert successful.";
+    }
+
+    return $result;
 }
 
 

@@ -28,7 +28,7 @@ if (!$user_languages) {
 
 // Set a default language if none is selected
 if (!isset($_SESSION['selected_language'])) {
-    $_SESSION['selected_language'] = $user_languages['lang_1'];
+    $_SESSION['selected_language'] = 'lang_1';
 }
 
 // Remove NULL values from the list

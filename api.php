@@ -13,7 +13,7 @@ $user_id = $_SESSION['user_id'] ?? null;
 $selected_language = $_SESSION['selected_language'] ?? 'lang_1';
 $reference_language = $_SESSION['reference_language'] ?? 'lang_1';
 
-error_log("Request: " . print_r($request, true));
+error_log("Action: $action | Table: $table | Data: " . print_r($request, true));
 
 if (!$table || !$action) {
     sendResponse(false, "Missing table or action.");
@@ -34,7 +34,7 @@ handleRequest($action, $table, $request);
 /** =========================  
  *  Function Definitions
  * ========================= **/
-
+//
 // Enforce user-based selection unless explicitly overridden
 function enforceUserScope(&$request, $user_id)
 {
@@ -43,6 +43,25 @@ function enforceUserScope(&$request, $user_id)
             $request['conditions']['user_id'] = $user_id;
         }
     }
+}
+
+// Nest translation fields dynamically
+function nestTranslationFields(array $row): array
+{
+    $grouped = [];
+    foreach ($row as $key => $value) {
+        if (preg_match('/^(.+)_lang_(\d)$/', $key, $matches)) {
+            $base = $matches[1];
+            $lang = "lang_" . $matches[2];
+            $grouped[$base][$lang] = $value;
+        } elseif (preg_match('/^ref_(.+)$/', $key, $matches)) {
+            $base = $matches[1];
+            $grouped[$base]['ref'] = $value;
+        } else {
+            $grouped[$key] = $value;
+        }
+    }
+    return $grouped;
 }
 
 // Dynamically handle API requests (Fetch, Insert, Update, Delete)
@@ -55,6 +74,7 @@ function handleRequest($action, $table, $request)
         'delete' => 'deleteRecord'
     ];
 
+    // Ensure the action is valid
     if (!isset($actions[$action])) {
         sendResponse(false, "Invalid action.");
     }
@@ -79,8 +99,51 @@ function handleRequest($action, $table, $request)
         $limit = $request['limit'] ?? null;
         $offset = $request['offset'] ?? null;
         $orderBy = $request['orderBy'] ?? null;
-
         $response = getRecords($table, $conditions, $fetchMode, $columns, $orderBy, $limit, $offset);
+
+        if ($response['success'] && is_array($response['data'])) {
+            // ---- NEST SKILL POINTS FOR EMPLOYERS/COURSES ----
+            if (in_array($table, ['employers', 'courses'])) {
+                $linkedTable = $table === 'employers' ? 'work_experience' : 'education';
+                $foreignKey = $table === 'employers' ? 'employerId' : 'courseId';
+                $experienceIds = array_column($response['data'], 'id');
+                $skillPoints = getRecords($linkedTable, ['user_id' => $GLOBALS['user_id']])['data'] ?? [];
+
+                foreach ($response['data'] as &$record) {
+                    $record['skills'] = array_values(array_map('nestTranslationFields', array_filter($skillPoints, function ($point) use ($record, $foreignKey) {
+                        return $point[$foreignKey] == $record['id'];
+                    })));
+                }
+                unset($record);
+            }
+            // ---- END NESTING ----
+
+            // Apply translation nesting after skill points have been attached
+            $response['data'] = array_map(function ($item) {
+                $item = nestTranslationFields($item);
+                if (isset($item['skills']) && is_array($item['skills'])) {
+                    $item['skills'] = array_map('nestTranslationFields', $item['skills']);
+                }
+                return $item;
+            }, $response['data']);
+
+            // Apply field mapping for consistent naming like 'title' and 'organisation'
+            $fieldMap = [
+                'employers' => ['job_position' => 'title', 'employer' => 'organisation'],
+                'courses'   => ['course' => 'title',       'school'   => 'organisation']
+            ];
+            if (isset($fieldMap[$table])) {
+                foreach ($response['data'] as &$record) {
+                    foreach ($fieldMap[$table] as $original => $alias) {
+                        if (isset($record[$original])) {
+                            $record[$alias] = $record[$original];
+                            unset($record[$original]);
+                        }
+                    }
+                }
+                unset($record);
+            }
+        }
     } elseif ($action === 'insert') {
         $response = insertRecord($table, $data);
     } elseif ($action === 'update') {

@@ -23,7 +23,6 @@ const apiRequest = async (table, action, data = {}, conditions = {}, options = {
   }
 };
 
-
 document.addEventListener("DOMContentLoaded", function () {
 
   // Initial page load based on URL
@@ -48,6 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const response = await fetch("fetch_user_languages.php");
       const data = await response.json();
+      console.log("Languages fetched:", data);
 
       if (data.no_languages) {
         showMissingDefaultLanguagePopup();
@@ -357,5 +357,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Refresh the content to apply translations dynamically
     NavigationManager.reloadCurrentPage();
+  });
+
+  // Global handler: Pressing Enter triggers related button click via data-trigger-button
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      const target = e.target;
+      const triggerSelector = target.getAttribute('data-trigger-button');
+      if (triggerSelector) {
+        const button = document.querySelector(triggerSelector);
+        if (button) {
+          e.preventDefault();
+          button.click();
+        }
+      }
+    }
+  });
+
+  TranslationConfig.onUpdate(() => {
+    SkillPointManager.reRenderAll();
+    // ExperienceManager.reRenderAll(); if needed
   });
 });

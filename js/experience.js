@@ -12,21 +12,13 @@ const Experience = {
     this.isDragging = false;
 
     // Detect page and initialize the correct logic
-    if (Experience.isWorkExperiencePage()) {
+    if (!!document.querySelector("#employers")) {
       Experience.initWorkExperience();
-    } else if (Experience.isEducationPage()) {
+    } else if (!!document.querySelector("#courses")) {
       Experience.initEducation();
     } else {
       console.warn("No matching page detected for Experience.js");
     }
-  },
-
-  isWorkExperiencePage: function () {
-    return !!document.querySelector("#employers");
-  },
-
-  isEducationPage: function () {
-    return !!document.querySelector("#courses");
   },
 
   initWorkExperience: function () {
@@ -42,7 +34,6 @@ const Experience = {
     Experience.initializeSortable("courses", "education");
     Experience.addEventListeners();
   },
-
   // Generic AJAX request handler to reduce code repetition
   ajaxRequest: function (
     url,
@@ -63,26 +54,21 @@ const Experience = {
         onError(xhr, status, error);
       });
   },
-
   // Fetch work experience or education data and populate the container
   fetchData: function (call) {
     const containerId = call === "work_experience" ? "#employers" : "#courses";
-    Experience.ajaxRequest(
-      "fetch.php",
-      "GET",
-      {
-        call,
-      },
-      function (response) {
-        const selectedLanguage = response.selected_language;
-        const nullMessage = response.null_message;
-        const experiences = Array.isArray(response.data) ? response.data : [response.data];
+    const table = call === "work_experience" ? "employers" : "courses";
+    apiRequest(table, "fetch", {
+      columns: ["*"]
+    }).then(response => {
+      if (!response.success) {
+        console.error("Failed to fetch data:", response.message);
+        return;
+      }
 
-        // Handle the array as usual
-
-        const container = $(containerId).empty(); // Clear existing content
-        // Re-inject the "Add Experience" button
-        const addExperienceHTML = `
+      const container = $(containerId).empty();
+      // Re-inject the "Add Experience" button
+      const addExperienceHTML = `
         <div class="experience_card-container row" id="card-new_work_experience">
           <div class="time-plot">
           </div>
@@ -93,31 +79,45 @@ const Experience = {
                 </button>
               </div>
           </div>
-		  <div class="col-1"></div>
+          <div class="col-1"></div>
         </div>
       `;
-        container.append(addExperienceHTML);
+      container.append(addExperienceHTML);
 
-        if (Array.isArray(experiences)) {
-          // Loop through each experience and render the card
-          experiences.forEach((experience) =>
-            container.append(Experience.renderExperienceCard(experience, call, nullMessage))
-          );
-        } else {
-          console.error("Expected an array but got:", experiences);
+      const experiences = Array.isArray(response.data) ? response.data : [];
+
+      experiences.forEach(experience => {
+        // Append the main card structure
+        container.append(Experience.renderExperienceCard(experience, call, response.sel_language, response.ref_language));
+
+        // Append each skill point individually as jQuery elements
+        const skillList = $(`#skills_list_${experience.id}`);
+        const skills = Array.isArray(experience.skills) ? experience.skills : [];
+
+        if (skills.length > 0) {
+          skills.forEach(skill => {
+            const skillElement = SkillPointManager.render({
+              id: skill.id,
+              column: "skill",
+              valueObj: skill,
+              refLang: response.sel_language,
+              selLang: response.ref_language,
+              call: call,
+              parentId: experience.id,
+              isTranslateMode: Experience.translateMode
+            });
+            skillList.append(skillElement);
+          });
         }
-
-      }
-    );
+        SkillPointManager.updatePlaceholder(skillList, skills.length > 0);
+      });
+    });
   },
 
   // Render the experience card HTML
-  renderExperienceCard: function (experience, call, nullMessage) {
-    console.log("Rendering card for experience:", experience);
-    const skills = Array.isArray(experience.skills) ? experience.skills : [];
-
+  renderExperienceCard: function (experience, call, sel_language, ref_language) {
+    // Only produce the shell (no skill points here, they'll be appended later)
     let columnName = "";
-
     if (call == 'work_experience') {
       columnName = 'job_position';
     } else if (call == 'education') {
@@ -147,11 +147,11 @@ const Experience = {
       </div>
       <div class="card experience_card col">
         <div class="experience-header card-colored" id="experience_header_${experience.id}">
-          <h3 class="${!experience.title || Experience.translateMode ? 'null_message' : ''}">${Experience.translateMode ? experience.ref_title : experience.title || experience.ref_title}</h3>
-          ${renderTranslationInput(experience.id, columnName, experience.title, "entry")
+          <h3 class="${!experience.title[sel_language] || Experience.translateMode ? 'null_message' : ''}">${Experience.translateMode ? experience.ref_title : experience.title[sel_language] || experience.ref_title}</h3>
+          ${renderTranslationInput(experience.id, columnName, experience.title[sel_language], "entry")
       }
 
-    ${!Experience.translateMode ? '<p class= "sub-heading">' + experience.organization + '●' + experience.location + '</p>' : ''}
+    ${!Experience.translateMode ? '<p class= "sub-heading">' + experience.organisation + '●' + experience.country[sel_language] + ', ' + experience.area + '</p>' : ''}
           <div class="menu-icon-container" id="menu_container_${experience.id}">
             <div class="action-buttons slide-in" id="action_buttons_${experience.id
       }">
@@ -174,28 +174,12 @@ const Experience = {
     <h4>Demonstrated Skills</h4>
     <div class="skills-list-wrapper">
       <ul class="skills-list list-group list-group-flush" id="skills_list_${experience.id}">
-        ${skills.length > 0
-        ? skills
-          .map(
-            (skill) => `
-                          <li class="skill-item list-group-item" data-id="${skill.skill_id}" data-employer="${experience.id}" data-call="${call}">
-                            <div class="d-flex">
-                              <button class="menu-btn btn-outline-danger delete-point" data-id="${skill.skill_id}">
-                                <i class="fas fa-square-minus"></i>
-                              </button>
-                              <span class="point-text ${!skill.skill_name || Experience.translateMode ? 'reference' : ''}">${Experience.translateMode ? skill.ref_skill : skill.skill_name || skill.ref_skill}</span>
-                            </div>
-                            ${renderTranslationInput(skill.skill_id, "skill", skill.skill_name, "point")}
-                          </li>`
-          )
-          .join("")
-        : "<li class='list-group-item text-muted'>No skills available</li>"
-      }
+        <!-- Skill points will be appended here dynamically -->
       </ul>
     </div>
           <div class="input-group mb-3">
-			<input type="text" class="form-control" id="input_experience_${experience.id
-      }" placeholder="Type your skill here">
+      <input type="text" class="form-control" id="input_experience_${experience.id
+      }" placeholder="Type your skill here" data-trigger-button="#add_work_experience_${experience.id}">
             <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${experience.id
       }" onClick="Experience.addPoint('${call}', '${experience.id
       }')"><i class="fas fa-square-plus"></i></button>
@@ -409,17 +393,17 @@ const Experience = {
 
       $("#modalTitleExperience").text(modalTitle);
       // Show and enable
-      $("#organization-field-work, #position-field-work").show();
-      $("#organization-field-work input")
+      $("#organisation-field-work, #position-field-work").show();
+      $("#organisation-field-work input")
         .val(organisationField)
         .prop("disabled", false);
       $("#position-field-work input")
         .val(positionField)
         .prop("disabled", false);
       // Hide and disable
-      $("#organization-field-education, #position-field-education").hide();
+      $("#organisation-field-education, #position-field-education").hide();
       $(
-        "#organization-field-education input, #position-field-education input"
+        "#organisation-field-education input, #position-field-education input"
       ).prop("disabled", true);
     } else if (call === "education") {
       const modalTitle = isEdit ? "Edit Education" : "Add Education";
@@ -429,16 +413,16 @@ const Experience = {
 
       $("#modalTitleExperience").text(modalTitle);
       // Show and enable
-      $("#organization-field-education, #position-field-education").show();
-      $("#organization-field-education input")
+      $("#organisation-field-education, #position-field-education").show();
+      $("#organisation-field-education input")
         .val(organisationField)
         .prop("disabled", false);
       $("#position-field-education input")
         .val(positionField)
         .prop("disabled", false);
       // Hide and disable
-      $("#organization-field-work, #position-field-work").hide();
-      $("#organization-field-work input, #position-field-work input").prop(
+      $("#organisation-field-work, #position-field-work").hide();
+      $("#organisation-field-work input, #position-field-work input").prop(
         "disabled",
         true
       );
@@ -467,7 +451,7 @@ const Experience = {
   // Reset all fields in the modal
   resetModalFields: function () {
     $("#form-experience")[0].reset();
-    $("#organization-field").empty();
+    $("#organisation-field").empty();
     $("#position-field").empty();
     $("#end-date-container").show();
     $(".form-control").removeClass("is-invalid");
@@ -538,120 +522,29 @@ const Experience = {
 
   // Function to add a skill to an experience or education entry
   addPoint: function (call, parentId) {
-    const inputId = `#input_experience_${parentId} `;
+    const inputId = `#input_experience_${parentId}`;
     const inputElement = $(inputId);
-    if (inputElement.length === 0) {
-      console.error(`Element not found: ${inputId} `);
-      return;
-    }
-    const skillName = inputElement.val().trim();
-    if (!skillName) {
+    const value = inputElement.val().trim();
+
+    if (!value) {
       alert("Please enter a skill before adding.");
       return;
     }
 
-    Experience.ajaxRequest(
-      "add-skill.php",
-      "POST",
-      {
-        call,
-        parent_id: parentId,
-        input: skillName,
-      },
-      function (response) {
-        console.log("Raw response:", response); // Log the raw response for debugging
-
-        try {
-          if (response.status === "success") {
-            const newSkillItem = `
-  <li class="skill-item list-group-item" data - id="${response.insert_id}" data - employer="${parentId}" data - call="${call}">
-    <div class="d-flex">
-      <button class="menu-btn btn-outline-danger delete-point" data-id="${response.insert_id}">
-        <i class="fas fa-trash-alt"></i>
-      </button>
-      <span class="point-text">${response.skill_name}</span>
-    </div>
-            </li > `;
-            const skillsListId = `#skills_list_${parentId} `;
-            $(skillsListId).append(newSkillItem);
-            inputElement.val(""); // Clear input
-          } else {
-            console.error("Error adding skill:", response.message);
-            alert("Error adding skill: " + response.message);
-          }
-        } catch (error) {
-          console.error("Error parsing response:", error);
-          alert("Unexpected error occurred. Please try again.");
-        }
-      },
-      function (xhr, status, error) {
-        console.error("Error occurred during AJAX request:", error);
-        alert("Error adding skill. Please try again.");
+    SkillPointManager.add({
+      category: call,
+      parentId,
+      input: value,
+      selLang: selectedLanguage,
+      column: "skill",
+      onSuccess: (newLi) => {
+        const container = $(`#skills_list_${parentId}`);
+        const placeholder = container.find(".text-muted");
+        if (placeholder.length) placeholder.remove();
+        container.append(newLi);
+        inputElement.val("");
       }
-    );
-  },
-
-  // Edit skill items in-place with better error handling
-  editSkillItem: function (event) {
-    if (!$(event.target).is("input, .delete-point") && !Experience.translateMode) {
-      console.log(event);
-      const pointContainer = $(event.currentTarget);
-      const pointText = pointContainer.find(".point-text");
-      const originalPointValue = pointText.text().trim();
-
-      pointText.html(
-        `<input type="text" class="form-control skill-item-input" value="${originalPointValue}">`
-      );
-      $(".skill-item-input").focus();
-
-      $(".skill-item-input")
-        .off("blur")
-        .on("blur", function () {
-          const editedPoint = $(this).val().trim();
-          const call = pointContainer.data("call");
-          const pointId = pointContainer.data("id");
-          const employerId = pointContainer.data("employer");
-
-          Experience.ajaxRequest(
-            "update-point.php",
-            "POST",
-            {
-              pointId,
-              employerId,
-              call,
-              editedPoint,
-            },
-            function () {
-              pointText.text(editedPoint);
-            },
-            function () {
-              pointText.html(originalPointValue);
-            }
-          );
-        });
-    }
-  },
-
-  // Delete a skill or point with confirm prompt
-  deleteSkillItem: function (event) {
-    event.stopPropagation();
-    const pointContainer = $(event.currentTarget).closest(".skill-item");
-    const pointId = pointContainer.data("id");
-    const call = pointContainer.data("call");
-
-    if (confirm("Are you sure you want to delete this point?")) {
-      Experience.ajaxRequest(
-        "delete-point.php",
-        "POST",
-        {
-          pointId,
-          call,
-        },
-        function () {
-          pointContainer.remove(); // Remove the skill from the list without refreshing everything
-        }
-      );
-    }
+    });
   },
 
   // Helper function to get month abbreviation
@@ -946,12 +839,6 @@ const Experience = {
         Experience.updateExperience(experienceId, call);
       });
 
-    $(document)
-      .off("click", ".skill-item")
-      .on("click", ".skill-item", Experience.editSkillItem);
-    $(document)
-      .off("click", ".delete-point")
-      .on("click", ".delete-point", Experience.deleteSkillItem);
     $(document)
       .off("click", "#btn-add-experience")
       .on("click", "#btn-add-experience", function () {

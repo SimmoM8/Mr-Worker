@@ -9,6 +9,11 @@ const Resumes = {
     this.currentTab = 'details';
     Resumes.fetchResumes();
     Resumes.addEventListeners();
+
+    // Register translation update callback to re-render resume cards
+    TranslationConfig.onUpdate(() => {
+      Resumes.reRenderAll();
+    });
   },
 
   addEventListeners: function () {
@@ -236,7 +241,6 @@ const Resumes = {
     });
   },
 
-
   switchTab: function (nextTab) {
     if (!Resumes.currentTab) {
       console.error("Failed to identify the current tab.");
@@ -364,33 +368,132 @@ const Resumes = {
   },
 
   fetchResumes: function () {
-    const translate_mode = Resumes.translateMode || false;
-    console.log("translate mode: ", translate_mode);
-    Resumes.handleAjax('fetch-resumes.php', { translate_mode: translate_mode }, 'GET', (data) => {
-      const resumesGrid = $('.resumes-grid');
-      resumesGrid.html(data); // Inject pre-rendered HTML
+    apiRequest("resumes", "fetch").then(response => {
+      const resumesGrid = $(".resumes-grid");
+      resumesGrid.empty();
+
+      // Add the "Create new resume" card first
+      resumesGrid.append(`
+        <div class="col text-center">
+          <div class="card-resumes card-add" id="card-new_resume">
+            <div class="card-body my-auto">
+              <button type="button" class="btn btn-link btn-icon" id="btn-add-resume"><i class="bi bi-plus-circle-fill" style="font-size: 6rem"></i></button>
+              <p class="card-subtitle mb-4 text-muted">Create new resume</p>
+            </div>
+          </div>
+        </div>
+      `);
+
+      response.data.forEach(resume => {
+        const card = Resumes.renderCard(resume);
+        resumesGrid.append(card);
+      });
+    }).catch(error => {
+      console.error("Failed to fetch resumes:", error);
     });
   },
 
-  handleTranslationSave: function (event) {
-    const input = $(event.currentTarget).siblings('.translate-input');
-    const column = input.data("column");
-    const call = input.data("call");
-    const id = input.data('id');
-    const inputValue = input.val().trim();
+  renderCard: function (resume) {
+    // Extract all used resume properties into constants
+    const {
+      id,
+      job_position: title,
+      ref_title,
+      grad_color_1,
+      grad_color_2,
+      last_updated
+    } = resume;
 
-    if (inputValue) {
-      this.ajaxRequest(
-        'update-translation.php',
-        'POST',
-        {
-          id,
-          call,
-          column,
-          inputValue
-        },
-        () => alert('Translation saved!')
-      );
+    const { selectedLangKey, isTranslateMode } = TranslationConfig.getConfig();
+    const displayTitle = isTranslateMode ? ref_title : title?.[selectedLangKey] || ref_title || "-";
+    const titleClass = !title?.[selectedLangKey] || isTranslateMode ? "null_message" : "";
+
+    // Format date as "Last updated X" or "just now"
+    let lastUpdatedText = "just now";
+    if (last_updated) {
+      const updatedDate = new Date(last_updated);
+      const now = new Date();
+      const diffMs = now - updatedDate;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      const diffMonths = Math.floor(diffDays / 30);
+      const diffYears = Math.floor(diffDays / 365);
+
+      if (diffMins < 1) {
+        lastUpdatedText = "just now";
+      } else if (diffMins < 60) {
+        lastUpdatedText = `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+      } else if (diffDays < 31) {
+        lastUpdatedText = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+      } else if (diffYears < 1) {
+        lastUpdatedText = `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
+      } else {
+        lastUpdatedText = updatedDate.toLocaleDateString();
+      }
     }
+
+    const cardElement = $(`
+      <div class="col">
+        <div class="card card-resumes" id="resume_${id}" data-id="${id}">
+          <div class="color-gradient" style="background-image: linear-gradient(to right, ${grad_color_1 || 'white'}, ${grad_color_2 || 'white'})"></div>
+          <div style="position: relative;">
+            <div class="card-body" style="display: flex; justify-content: space-between;">
+              <div>
+                <h3 class="card-text ${titleClass}" data-title-json='${JSON.stringify(title || {})}'>${displayTitle}</h3>
+                ${isTranslateMode ? `
+                  <div class="d-flex align-items-center mt-2">
+                    <input type="text" class="form-control translate-input" placeholder="Enter translation"
+                           value="${title?.[selectedLangKey] || ''}"
+                           data-id="${id}" data-call="resumes" data-column="job_position">
+                    <button class="btn btn-success btn-sm ms-2 save-translation"
+                            data-id="${id}" data-call="resumes" data-column="job_position">
+                      Save
+                    </button>
+                  </div>
+                ` : `
+                  <p class="card-subtitle mb-4 text-muted">${lastUpdatedText}</p>
+                `}
+              </div>
+              ${!isTranslateMode ? `
+                <div class="btn-icon menu-btn edit-resume-btn" data-id="${id}">
+                  <i class="fas fa-pencil"></i>
+                </div>
+              ` : ''}
+            </div>
+            <div class="card-body" style="align-content: end;">
+              <div class="buttons">
+                <form action="gen-pdf.php" method="post">
+                  <input type="hidden" name="card_id" value="${id}">
+                  <button class="btn btn-primary main-btn btn-lg" name="submit">View</button>
+                </form>
+                <div class="btn-icon menu-btn delete-resume-btn" data-id="${id}">
+                  <i class="fas fa-trash-arrow-up me-3"></i>Delete
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    cardElement.find('.card-resumes').data("resume", resume);
+    return cardElement;
+  },
+
+  reRenderAll: function () {
+    $(".card-resumes").each(function () {
+      const card = $(this);
+      const id = card.data("id");
+
+      if (id === "card-new_resume") return;
+
+      const resume = card.data("resume");
+      if (!resume) return;
+
+      const newCard = Resumes.renderCard(resume);
+      card.closest(".col").replaceWith(newCard);
+    });
   },
 };
+

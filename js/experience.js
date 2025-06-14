@@ -19,6 +19,10 @@ const Experience = {
     } else {
       console.warn("No matching page detected for Experience.js");
     }
+
+    TranslationConfig.onUpdate(() => {
+      Experience.reRenderAll();
+    });
   },
 
   initWorkExperience: function () {
@@ -28,12 +32,11 @@ const Experience = {
   },
 
   initEducation: function () {
-    console.log("Initializing Education Page");
-
     Experience.fetchData("education");
     Experience.initializeSortable("courses", "education");
     Experience.addEventListeners();
   },
+
   // Generic AJAX request handler to reduce code repetition
   ajaxRequest: function (
     url,
@@ -59,8 +62,8 @@ const Experience = {
     const containerId = call === "work_experience" ? "#employers" : "#courses";
     const table = call === "work_experience" ? "employers" : "courses";
     apiRequest(table, "fetch", {
-      columns: ["*"]
-    }).then(response => {
+      columns: ["*"],
+    }).then((response) => {
       if (!response.success) {
         console.error("Failed to fetch data:", response.message);
         return;
@@ -86,25 +89,25 @@ const Experience = {
 
       const experiences = Array.isArray(response.data) ? response.data : [];
 
-      experiences.forEach(experience => {
+      experiences.forEach((experience) => {
         // Append the main card structure
-        container.append(Experience.renderExperienceCard(experience, call, response.sel_language, response.ref_language));
+        container.append(Experience.renderExperienceCard(experience, call));
 
         // Append each skill point individually as jQuery elements
         const skillList = $(`#skills_list_${experience.id}`);
-        const skills = Array.isArray(experience.skills) ? experience.skills : [];
+        const skills = Array.isArray(experience.skills)
+          ? experience.skills
+          : [];
 
         if (skills.length > 0) {
-          skills.forEach(skill => {
+          skills.forEach((skill) => {
             const skillElement = SkillPointManager.render({
               id: skill.id,
               column: "skill",
               valueObj: skill,
-              refLang: response.sel_language,
-              selLang: response.ref_language,
               call: call,
               parentId: experience.id,
-              isTranslateMode: Experience.translateMode
+              isTranslateMode: Experience.translateMode,
             });
             skillList.append(skillElement);
           });
@@ -115,82 +118,88 @@ const Experience = {
   },
 
   // Render the experience card HTML
-  renderExperienceCard: function (experience, call, sel_language, ref_language) {
-    // Only produce the shell (no skill points here, they'll be appended later)
-    let columnName = "";
-    if (call == 'work_experience') {
-      columnName = 'job_position';
-    } else if (call == 'education') {
-      columnName = 'course';
-    }
+  renderExperienceCard: function (experience, call) {
+    const { id, start_date, end_date } = experience;
 
-    // Add input field if translate mode is enabled
-    const renderTranslationInput = (id, column, value, type) => {
-      if (Experience.translateMode) {
-        return `
-      <div class="d-flex align-items-center mt-2">
-        <input type="text" class="form-control translate-input" 
-               placeholder="Enter translation" value="${value || ""}" 
-               data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">
-        <button class="btn btn-success btn-sm ms-2 save-translation" 
-                data-id="${id}" data-column="${column}" data-call="${call}" data-type="${type}">Save</button>
-      </div>`;
-      }
-      return "";
-    };
-
-    return `
-    <div class="experience_card-container row" id="experience_card_${experience.id}">
-      <div class="time-plot">
-        <p class="time">${experience.end_date}<br> 
-        <i class="fas fa-arrow-up"></i><br>${experience.start_date}</p>
+    // Modular header rendering
+    const card = $(`
+      <div class="experience_card-container row" id="experience_card_${id}" data-id="${id}">
+        <div class="time-plot">
+          <p class="time">${end_date}<br><i class="fas fa-arrow-up"></i><br>${start_date}</p>
+        </div>
+        <div class="card experience_card col"></div>
+        <div class="drag-handle menu-btn col-1" data-id="${id}">
+          <i class="fas fa-grip-lines"></i>
+        </div>
       </div>
-      <div class="card experience_card col">
-        <div class="experience-header card-colored" id="experience_header_${experience.id}">
-          <h3 class="${!experience.title[sel_language] || Experience.translateMode ? 'null_message' : ''}">${Experience.translateMode ? experience.ref_title : experience.title[sel_language] || experience.ref_title}</h3>
-          ${renderTranslationInput(experience.id, columnName, experience.title[sel_language], "entry")
-      }
+    `);
 
-    ${!Experience.translateMode ? '<p class= "sub-heading">' + experience.organisation + '●' + experience.country[sel_language] + ', ' + experience.area + '</p>' : ''}
-          <div class="menu-icon-container" id="menu_container_${experience.id}">
-            <div class="action-buttons slide-in" id="action_buttons_${experience.id
-      }">
-              <button class="menu-btn btn-outline-primary edit-experience" data-id="${experience.id
-      }" data-call="${call}">
-                <i class="fas fa-pencil-alt"></i> Edit
-              </button>
-              <button class="menu-btn btn-outline-danger delete-experience" data-id="${experience.id
-      }" data-call="${call}">
-                <i class="fas fa-trash-alt"></i> Delete
-              </button>
-            </div>
-            <button class="menu-btn btn-link menu-toggle" style="" type="button" id="menu_${experience.id
-      }">
-              <i class="fas fa-ellipsis-h"></i>
+    const cardContent = card.find(".experience_card");
+    cardContent.append(Experience.renderHeader(experience, call));
+    cardContent.append(`
+      <div class="collapsible-content" id="content_${id}" style="display: none;">
+        <h4>Demonstrated Skills</h4>
+        <div class="skills-list-wrapper">
+          <ul class="skills-list list-group list-group-flush" id="skills_list_${id}"></ul>
+        </div>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" id="input_experience_${id}" placeholder="Type your skill here" data-trigger-button="#add_work_experience_${id}">
+          <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${id}" onClick="Experience.addPoint('${call}', '${id}')">
+            <i class="fas fa-square-plus"></i>
+          </button>
+        </div>
+      </div>
+    `);
+    return card;
+  },
+
+  // Modular header rendering
+  renderHeader: function (experience, call) {
+    const { id, title, country, organisation, area } = experience;
+    const { isTranslateMode, selectedLangKey, referenceLanguage } =
+      TranslationConfig.getConfig();
+    const titleValue = isTranslateMode
+      ? experience.ref_title
+      : title?.[selectedLangKey] || experience.ref_title || "-";
+    const countryValue = isTranslateMode
+      ? ""
+      : country?.[selectedLangKey] || "-";
+
+    const headerHTML = `
+      <div class="experience-header card-colored" id="experience_header_${id}" data-id="${id}">
+        <h3 class="${!title?.[selectedLangKey] || isTranslateMode ? "null_message" : ""
+      }"
+          data-title-json='${JSON.stringify(title)}'>
+          ${titleValue}
+        </h3>
+        ${!isTranslateMode
+        ? `
+          <p class="sub-heading experience-location">
+            ${organisation} ● 
+            <span class="location-country ${!country?.[selectedLangKey] ? "null_message" : ""
+        }" 
+                  data-country-json='${JSON.stringify(country)}'>
+              ${countryValue}
+            </span>, ${area}
+          </p>`
+        : ""
+      }
+        <div class="menu-icon-container" id="menu_container_${id}">
+          <div class="action-buttons slide-in" id="action_buttons_${id}">
+            <button class="menu-btn btn-outline-primary edit-experience" data-id="${id}" data-call="${call}">
+              <i class="fas fa-pencil-alt"></i> Edit
+            </button>
+            <button class="menu-btn btn-outline-danger delete-experience" data-id="${id}" data-call="${call}">
+              <i class="fas fa-trash-alt"></i> Delete
             </button>
           </div>
-        </div >
-  <div class="collapsible-content" id="content_${experience.id}" style="display: none;">
-    <h4>Demonstrated Skills</h4>
-    <div class="skills-list-wrapper">
-      <ul class="skills-list list-group list-group-flush" id="skills_list_${experience.id}">
-        <!-- Skill points will be appended here dynamically -->
-      </ul>
-    </div>
-          <div class="input-group mb-3">
-      <input type="text" class="form-control" id="input_experience_${experience.id
-      }" placeholder="Type your skill here" data-trigger-button="#add_work_experience_${experience.id}">
-            <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${experience.id
-      }" onClick="Experience.addPoint('${call}', '${experience.id
-      }')"><i class="fas fa-square-plus"></i></button>
-          </div>
-  </div>
-      </div >
-  <div class="drag-handle menu-btn col-1" data-id="${experience.id}">
-    <i class="fas fa-grip-lines"></i> <!-- Drag handle -->
-  </div>
-    </div >
-  `;
+          <button class="menu-btn btn-link menu-toggle" type="button" id="menu_${id}">
+            <i class="fas fa-ellipsis-h"></i>
+          </button>
+        </div>
+      </div>
+    `;
+    return $(headerHTML);
   },
 
   // Handle reordering of items and send updated order to the server
@@ -543,7 +552,7 @@ const Experience = {
         if (placeholder.length) placeholder.remove();
         container.append(newLi);
         inputElement.val("");
-      }
+      },
     });
   },
 
@@ -624,22 +633,19 @@ const Experience = {
       formData.end_year = $("#end_year").val().trim();
       formData.end_date = `${Experience.getMonthAbbreviation(
         formData.end_month
-      )
-        } ${formData.end_year} `;
+      )} ${formData.end_year} `;
     } else {
       // Set end date to current date when "Currently working here" is checked
       const today = new Date();
       formData.end_date = `${Experience.getMonthAbbreviation(
         `0${today.getMonth() + 1}`.slice(-2)
-      )
-        } ${today.getFullYear()} `;
+      )} ${today.getFullYear()} `;
     }
 
     // Create the formatted start date using month abbreviations
     formData.start_date = `${Experience.getMonthAbbreviation(
       formData.start_month
-    )
-      } ${formData.start_year} `;
+    )} ${formData.start_year} `;
 
     Experience.ajaxRequest(
       "add-entry.php",
@@ -647,7 +653,6 @@ const Experience = {
       formData,
       function (response) {
         if (response.status === "success") {
-          console.log("Entry added successfully");
           $("#modal-experience").modal("hide");
           Experience.fetchData(call); // Refresh the list with new entry
         } else {
@@ -723,24 +728,19 @@ const Experience = {
       formData.end_year = $("#end_year").val().trim();
       formData.end_date = `${Experience.getMonthAbbreviation(
         formData.end_month
-      )
-        } ${formData.end_year} `;
+      )} ${formData.end_year} `;
     } else {
       // Set end date to current date when "Currently working here" is checked
       const today = new Date();
       formData.end_date = `${Experience.getMonthAbbreviation(
         `0${today.getMonth() + 1}`.slice(-2)
-      )
-        } ${today.getFullYear()} `;
+      )} ${today.getFullYear()} `;
     }
 
     // Create the formatted start date using month abbreviations
     formData.start_date = `${Experience.getMonthAbbreviation(
       formData.start_month
-    )
-      } ${formData.start_year} `;
-
-    console.log("Updating entry:", formData.call);
+    )} ${formData.start_year} `;
 
     // AJAX request to update the experience in the database
     Experience.ajaxRequest(
@@ -748,7 +748,6 @@ const Experience = {
       "POST",
       formData,
       function () {
-        console.log("Entry updated successfully");
         $("#modal-experience").modal("hide");
         Experience.fetchData(formData.call); // Refresh the list with updated entry
       },
@@ -788,10 +787,6 @@ const Experience = {
         e.preventDefault();
         const experienceId = $(this).data("id");
         const call = $(this).data("call");
-        console.log("Id:");
-        console.log(experienceId);
-        console.log("Call:");
-        console.log(call);
         Experience.ajaxRequest(
           "fetch-single-experience.php",
           "GET",
@@ -844,7 +839,6 @@ const Experience = {
       .on("click", "#btn-add-experience", function () {
         const call = $(this).data("entry-type");
         Experience.openExperienceModal(false, null, call);
-        console.log("opening add modal " + call);
       });
 
     // Reset modal fields on modal close
@@ -890,7 +884,7 @@ const Experience = {
           call,
           column,
           inputValue,
-          type
+          type,
         },
         function (response) {
           if (response.status === "success") {
@@ -905,5 +899,31 @@ const Experience = {
         }
       );
     });
-  }
+  },
+
+  reRenderAll: function () {
+    $(".experience-header").each(function () {
+      const container = $(this);
+
+      const id = container.data("id");
+
+      const call = container.find(".edit-experience").data("call");
+
+      const titleObj = JSON.parse(container.find("h3").attr("data-title-json") || "{}");
+      const countryObj = JSON.parse(container.find(".location-country").attr("data-country-json") || "{}");
+      const organisation = container.find(".experience-location").text().split("●")[0]?.trim() || "";
+      const area = container.find(".experience-location").text().split(",")[1]?.trim() || "";
+
+      const experience = {
+        id,
+        title: titleObj,
+        country: countryObj,
+        organisation,
+        area,
+      };
+
+      const newHeader = Experience.renderHeader(experience, call);
+      container.replaceWith(newHeader);
+    });
+  },
 };

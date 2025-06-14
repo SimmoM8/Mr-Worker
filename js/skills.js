@@ -108,8 +108,6 @@ const Skills = {
                       id: skill.id,
                       column: "skill",
                       valueObj: skill,
-                      refLang: response.ref_language,
-                      selLang: response.sel_language,
                       call: category,
                       isTranslateMode: Skills.translateMode
                     })

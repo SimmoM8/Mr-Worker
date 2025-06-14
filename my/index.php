@@ -47,44 +47,7 @@ if (!isset($_SESSION['user_id'])) {
   <div class="container-fluid" style="overflow-y: auto; padding: 0;">
 
     <!-- TOP BAR -->
-    <div id="top-bar" class="d-flex justify-content-between align-items-center px-5 py-3">
-      <!-- Language Selector -->
-      <div class="d-flex align-items-center">
-        <label for="userLanguageSelector" class="me-2">Language:</label>
-        <select id="userLanguageSelector" class="form-select me-3">
-        </select>
-
-        <!-- Hidden Add Language Input -->
-        <div id="addLanguageContainer" class="align-items-center" style="display: none;">
-          <div class="dropdown w-100">
-            <input type="text" id="searchLanguageInput" class="form-control dropdown-toggle"
-              data-bs-toggle="dropdown" placeholder="Search for a language...">
-            <ul id="languagesDropdown" class="dropdown-menu w-100"></ul>
-          </div>
-          <button id="addLanguageBtn" class="btn btn-primary mt-3 w-100" disabled>Add Language</button>
-          <button id="cancelAddLanguageBtn" class="btn btn-primary mt-3 w-100">Cancel</button>
-        </div>
-
-        <!-- Translate Mode Button -->
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" id="translateModeSwitch">
-          <label class="form-check-label" for="translateModeSwitch" style="text-wrap: nowrap;">Translate Mode</label>
-        </div>
-      </div>
-
-      <!-- User Profile Dropdown -->
-      <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown"
-          aria-expanded="false">
-          <i class="bi bi-person-circle"></i> Profile
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-          <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
-          <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
-          </li>
-        </ul>
-      </div>
-    </div>
+    <?php include 'includes/top_toolbar.php'; ?>
 
     <!-- MAIN CONTENT CONTAINER -->
     <div id="main-content" class="p-3">

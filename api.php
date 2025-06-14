@@ -20,13 +20,15 @@ if (!$table || !$action) {
 }
 
 // Ensure the table name is valid
-$allowedTables = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses', 'users', 'resumes', 'courses', 'employers', 'user_reports', 'password_resets', 'translation_languages', 'user_translations'];
+$allowedTables = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses', 'users', 'resumes', 'courses', 'employers', 'user_reports', 'password_resets', 'global_languages', 'user_languages'];
 if (!in_array($table, $allowedTables)) {
     sendResponse(false, "Invalid table name.");
 }
 
 // Enforce user scope unless explicitly overridden
-enforceUserScope($request, $user_id);
+$enforceScope = !(isset($request['user_scope']) && $request['user_scope'] === false);
+error_log("Enforcing user scope: " . ($enforceScope ? "Yes" : "No"));
+enforceUserScope($request, $user_id, $enforceScope);
 
 // Handle API request dynamically
 handleRequest($action, $table, $request);
@@ -36,8 +38,10 @@ handleRequest($action, $table, $request);
  * ========================= **/
 //
 // Enforce user-based selection unless explicitly overridden
-function enforceUserScope(&$request, $user_id)
+function enforceUserScope(&$request, $user_id, $enforce = true)
 {
+    if (!$enforce) return;
+
     if (!isset($request['conditions']['user_id']) && $user_id) {
         if (!isset($request['user_dependant']) || $request['user_dependant']) {
             $request['conditions']['user_id'] = $user_id;

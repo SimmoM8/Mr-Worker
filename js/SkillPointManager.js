@@ -1,17 +1,10 @@
 const SkillPointManager = {
-
-
     /**
      * Render a single skill point <li> DOM element.
      * @param {Object} config
      * @returns {HTMLElement} skill point <li>
      */
     render(config) {
-        const isTranslateMode = TranslationConfig.isTranslateMode;
-        const selLang = TranslationConfig.selectedLang;
-        const refLang = TranslationConfig.referenceLang;
-        const targetLang = TranslationConfig.targetLang;
-
         const {
             id,
             valueObj,
@@ -20,8 +13,10 @@ const SkillPointManager = {
             parentId = null
         } = config;
 
-        const referenceValue = valueObj?.[column]?.[refLang] ?? "-";
-        const targetValue = valueObj?.[column]?.[targetLang] ?? "-";
+        const { isTranslateMode, selectedLangKey, referenceLanguage } = TranslationConfig.getConfig();
+
+        const referenceValue = valueObj?.[column]?.[referenceLanguage] ?? "-";
+        const targetValue = valueObj?.[column]?.[selectedLangKey] ?? "-";
 
         const li = $(`
             <li class="skill-item list-group-item list-group-item-action"
@@ -39,7 +34,7 @@ const SkillPointManager = {
                 column,
                 refText: referenceValue,
                 value: targetValue,
-                lang: targetLang
+                lang: selectedLangKey
             });
             li.append(translationEl);
         } else {
@@ -56,9 +51,12 @@ const SkillPointManager = {
                 column,
                 call,
                 parentId,
-                selLang: targetLang
+                selLang: selectedLangKey
             });
         }
+
+        li.data("valueObj", valueObj);
+        console.log("valueObj: ", valueObj);
 
         return li;
     },
@@ -237,5 +235,30 @@ const SkillPointManager = {
                 $('<li class="placeholder text-muted fst-italic small" style ="background-color: transparent;">No skills added yet</li>')
             );
         }
+    },
+
+    reRenderAll: function () {
+        $(".skill-item").each(function () {
+            const li = $(this);
+            const id = li.data("id");
+            const column = li.data("column");
+            const call = li.data("call");
+            const parentId = li.data("parent-id");
+            const valueObj = li.data("valueObj");
+
+            const newLi = SkillPointManager.render({
+                id,
+                valueObj,
+                column,
+                call,
+                parentId
+            });
+
+            li.replaceWith(newLi);
+        });
     }
 };
+
+TranslationConfig.onUpdate(() => {
+    SkillPointManager.reRenderAll();
+});

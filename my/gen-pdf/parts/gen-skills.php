@@ -10,30 +10,21 @@ $pdf->SetFont($style['font'], '', 8);
 $skills = array(); // Define skills array to be outputed
 $skillWidths = array(); // Define skill widths array
 $skillsRow = array(); // Define skill rows array
-$sel_hs = explode(',', $resumes['hard_skills']); // The id's of the hard skills selected for this resume
-$sel_ss = explode(',', $resumes['soft_skills']); // The id's of the soft skills selected for this resume*/
-
-// Fetch all hard skills from the database
-$stmt = $pdo->prepare("SELECT id, skill_$selected_language FROM `hard_skills` WHERE user_id = :user_id");
-$stmt->execute(['user_id' => $user_id]);
-$all_hskills = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$sel_hs = explode(',', $data['resume']['hard_skills']); // The id's of the hard skills selected for this resume
+$sel_ss = explode(',', $data['resume']['soft_skills']); // The id's of the soft skills selected for this resume
 
 // Add selected hard skills to the skills array
-foreach ($all_hskills as $hskill) {
-  if (in_array($hskill['id'], $sel_hs)) {
-    $skills[] = $hskill["skill_$selected_language"];
+foreach ($hard_skills as $skill) {
+  if (in_array($skill['id'], $sel_hs)) {
+    $skills[] = $skill["skill"][$selected_language];
   }
 }
 
-// Fetch all soft skills from the database
-$stmt = $pdo->prepare("SELECT id, skill_$selected_language FROM `soft_skills` WHERE user_id = :user_id");
-$stmt->execute(['user_id' => $user_id]);
-$all_sskills = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Add selected soft skills to the skills array
-foreach ($all_sskills as $sskill) {
-  if (in_array($sskill['id'], $sel_ss)) {
-    $skills[] = $sskill["skill_$selected_language"];
+foreach ($soft_skills as $skill) {
+  if (in_array($skill['id'], $sel_ss)) {
+    $skills[] = $skill["skill"][$selected_language];
   }
 }
 

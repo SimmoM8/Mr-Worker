@@ -4,18 +4,13 @@ drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inn
 $currentY = $pdf->GetY();
 
 $languages = array();
-$sel_lang = explode(',', $resumes['languages']); // The id's of the dot points selected for this resume
-
-// Fetch all languages from the database
-$stmt = $pdo->prepare("SELECT id, language_$selected_language, percentage FROM `languages` WHERE user_id = :user_id");
-$stmt->execute(['user_id' => $user_id]);
-$all_languages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$sel_lang = explode(',', $data['resume']['languages']); // The id's of the dot points selected for this resume
 
 // Add selected languages to the `$languages` array
-foreach ($all_languages as $row) {
+foreach ($data['languages'] as $row) {
   if (in_array($row['id'], $sel_lang)) {
     $languages[] = [
-      'language' => $row["language_$selected_language"],
+      'language' => $row['language'][$selected_language],
       'percentage' => $row['percentage']
     ];
   }

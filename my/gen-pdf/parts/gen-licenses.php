@@ -4,19 +4,14 @@ drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inn
 $currentY = $pdf->GetY();
 
 $licenses = array();
-$sel_licenses = explode(',', $resumes['licenses']); // The id's of the licenses selected for this resume
-
-// Fetch all licenses from the database
-$stmt = $pdo->prepare("SELECT id, license_$selected_language, description_$selected_language FROM `licenses` WHERE user_id = :user_id");
-$stmt->execute(['user_id' => $user_id]);
-$all_licenses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$sel_licenses = explode(',', $data['resume']['licenses']); // The id's of the licenses selected for this resume
 
 // Add selected licenses to the `$licenses` array
-foreach ($all_licenses as $row) {
+foreach ($data['licenses'] as $row) {
   if (in_array($row['id'], $sel_licenses)) {
     $licenses[] = [
-      'type' => $row["license_$selected_language"],
-      'license' => $row["description_$selected_language"]
+      'type' => $row['license'][$selected_language],
+      'license' => $row['description'][$selected_language]
     ];
   }
 }

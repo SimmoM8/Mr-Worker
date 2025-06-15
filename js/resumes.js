@@ -463,8 +463,9 @@ const Resumes = {
             </div>
             <div class="card-body" style="align-content: end;">
               <div class="buttons">
-                <form action="gen-pdf.php" method="post">
+                <form action="build-resume.php" method="post">
                   <input type="hidden" name="card_id" value="${id}">
+                  <input type="hidden" name="sel_lang" value="${selectedLangKey}">
                   <button class="btn btn-primary main-btn btn-lg" name="submit">View</button>
                 </form>
                 <div class="btn-icon menu-btn delete-resume-btn" data-id="${id}">

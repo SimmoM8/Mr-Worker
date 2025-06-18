@@ -1,22 +1,25 @@
-const TranslationConfig = (function () {
+import { setupLanguageSearch, fetchGlobalLanguages } from "./languageSearch.js";
+import { apiRequest } from "./apiUtils.js";
+
+export const TranslationConfig = (function () {
     // Internal state
     let translateMode = false;
     let referenceLanguage = null;
     let targetLanguage = null;
-    let selectedLanguage = null;
+    let selectedLangCode = null;
     let slotLanguages = [];
     let availableLanguages = [];
 
     let subscribers = [];
 
     function getConfig() {
-        const selectedSlotIndex = slotLanguages.findIndex(code => code === selectedLanguage);
+        const selectedSlotIndex = slotLanguages.findIndex(code => code === selectedLangCode);
         const selectedLangKey = selectedSlotIndex !== -1 ? `lang_${selectedSlotIndex + 1}` : null;
         return {
             translateMode,
             referenceLanguage,
             targetLanguage,
-            selectedLanguage,
+            selectedLangCode,
             selectedSlotIndex,
             selectedLangKey
         };
@@ -35,8 +38,7 @@ const TranslationConfig = (function () {
     }
 
     function setSelectedLanguage(langCode) {
-        console.log("Setting selected language to:", langCode);
-        selectedLanguage = langCode;
+        selectedLangCode = langCode;
         renderSelectedLanguageUI();
         notifySubscribers();
     }
@@ -80,62 +82,27 @@ const TranslationConfig = (function () {
         const modal = new bootstrap.Modal(document.getElementById("addLanguageModal"));
         modal.show();
 
-        const searchInput = document.getElementById("languageSearchInput");
-        const resultsList = document.getElementById("languageSearchResults");
-        // Focus input after modal fully opens (shown.bs.modal event)
-        document.getElementById("addLanguageModal").addEventListener("shown.bs.modal", () => {
-            searchInput.focus();
+        $('#addLanguageModal').on('shown.bs.modal', function () {
+            document.querySelector("#languageSearchInput")?.focus();
         });
 
-        function updateSearchResults() {
-            const query = searchInput.value.toLowerCase().trim();
-            const usedCodes = new Set(slotLanguages);
-            resultsList.innerHTML = "";
-
-            if (!query) {
+        setupLanguageSearch({
+            inputSelector: "#languageSearchInput",
+            resultContainerSelector: "#languageSearchResults",
+            availableLanguages,
+            alreadyAdded: slotLanguages,
+            onSelect: (lang) => {
+                const input = document.getElementById("languageSearchInput");
+                input.value = lang.translated_name_en;
+                input.dataset.langCode = lang.language_code;
+                const resultsList = document.getElementById("languageSearchResults");
+                resultsList.innerHTML = "";
                 resultsList.style.display = "none";
-                return;
             }
-
-            const matches = availableLanguages.filter(lang =>
-                lang &&
-                typeof lang.language_name === "string" &&
-                typeof lang.language_code === "string" &&
-                !usedCodes.has(lang.language_code) &&
-                (lang.language_name.toLowerCase().includes(query) || lang.language_code.toLowerCase().includes(query))
-            );
-
-            if (matches.length === 0) {
-                const emptyItem = document.createElement("li");
-                emptyItem.className = "list-group-item text-muted";
-                emptyItem.textContent = "No matches found";
-                resultsList.appendChild(emptyItem);
-                resultsList.style.display = "block";
-                return;
-            }
-
-            matches.forEach(lang => {
-                const item = document.createElement("li");
-                item.className = "list-group-item list-group-item-action";
-                item.textContent = `${lang.language_name}`;
-                item.addEventListener("click", () => {
-                    searchInput.value = `${lang.language_name}`;
-                    searchInput.dataset.langCode = lang.language_code;
-                    resultsList.innerHTML = "";
-                    resultsList.style.display = "none";
-                });
-                resultsList.appendChild(item);
-            });
-
-            resultsList.style.display = "block";
-        }
-
-        searchInput.addEventListener("input", updateSearchResults);
-        updateSearchResults();
+        });
 
         document.getElementById("confirmAddLanguage").addEventListener("click", () => {
-            const langCode = searchInput.dataset.langCode;
-            console.log("langCode selected:", langCode);
+            const langCode = document.getElementById("languageSearchInput").dataset.langCode;
             if (langCode && !slotLanguages.includes(langCode)) {
                 addSlotLanguage(langCode);
                 modal.hide();
@@ -146,9 +113,7 @@ const TranslationConfig = (function () {
     }
 
     function addSlotLanguage(langCode) {
-        console.log("Adding langCode to slot:", langCode);
         const updatedSlots = [...slotLanguages.filter(Boolean), langCode].slice(0, 4);
-        console.log("Updated slots to save:", updatedSlots);
         setSlotLanguages(updatedSlots);
         apiRequest("user_languages", "update", {
             lang_1: updatedSlots[0] || null,
@@ -165,7 +130,7 @@ const TranslationConfig = (function () {
             slotLanguages.forEach(lang => {
                 if (!lang) return;
                 const btn = document.createElement("button");
-                btn.className = `btn btn-sm ${lang === selectedLanguage ? "btn-primary" : "btn-outline-primary"}`;
+                btn.className = `btn btn-sm ${lang === selectedLangCode ? "btn-primary" : "btn-outline-primary"}`;
                 btn.textContent = lang.toUpperCase();
                 btn.addEventListener("click", () => {
                     setSelectedLanguage(lang);
@@ -188,9 +153,9 @@ const TranslationConfig = (function () {
                 if (!lang) return;
                 const option = document.createElement("option");
                 option.value = lang;
-                const langName = (availableLanguages.find(l => l.language_code === lang) || {}).language_name || lang.toUpperCase();
+                const langName = (availableLanguages.find(l => l.language_code === lang) || {}).translated_name_en || lang.toUpperCase();
                 option.textContent = langName;
-                if (lang === selectedLanguage) {
+                if (lang === selectedLangCode) {
                     option.selected = true;
                 }
                 userLangSelector.appendChild(option);
@@ -200,24 +165,24 @@ const TranslationConfig = (function () {
 
     function setSlotLanguages(newArray) {
         slotLanguages = [...newArray];
-        if (!selectedLanguage && slotLanguages.length > 0) {
-            selectedLanguage = slotLanguages[0];
+        if (!selectedLangCode && slotLanguages.length > 0) {
+            selectedLangCode = slotLanguages[0];
         }
         renderSelectedLanguageUI();
     }
 
     function init() {
-        apiRequest("global_languages", "fetch", {}, {}, { user_scope: false }).then(res => {
-            if (res.success && Array.isArray(res.data)) {
-                availableLanguages = res.data;
-                console.log("Available languages:", availableLanguages);
-            }
+        console.log("✅ TranslationConfig initialized");
+        fetchGlobalLanguages().then(langs => {
+            availableLanguages = langs;
+            renderSelectedLanguageUI(); // ensure this only runs after data is ready
+        }).catch(err => {
+            console.error("Language loading error:", err);
         });
 
         // Fetch user's saved slot languages from the database using global api() helper
         apiRequest("user_languages", "fetch").then(res => {
             if (res.success && res.data) {
-                console.log("Fetched user languages:", res.data);
                 const row = res.data[0];
                 const langs = [
                     row.lang_1,
@@ -225,7 +190,6 @@ const TranslationConfig = (function () {
                     row.lang_3,
                     row.lang_4
                 ];
-                console.log("slot languages:", langs);
                 setSlotLanguages(langs);
             }
         });

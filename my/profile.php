@@ -149,8 +149,3 @@
     </div>
   </div>
 </section>
-<script>
-  if (typeof Profile !== "undefined" && Profile.init) {
-    Profile.init(); // Initialize profile.js for this page
-  }
-</script>

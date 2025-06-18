@@ -1,5 +1,9 @@
+import { apiRequest } from "./apiUtils.js";
+import { TranslationConfig } from "./TranslationConfig.js";
+import { SkillPointManager } from "./SkillPointManager.js";
+
 // Global Experience namespace
-const Experience = {
+export const Experience = {
   // Variable to determine if modal is being used to edit or add
   isEditMode: false,
   currentEditId: null,
@@ -144,7 +148,7 @@ const Experience = {
         </div>
         <div class="input-group mb-3">
           <input type="text" class="form-control" id="input_experience_${id}" placeholder="Type your skill here" data-trigger-button="#add_work_experience_${id}">
-          <button class="btn btn-outline-secondary" type="button" id="add_work_experience_${id}" onClick="Experience.addPoint('${call}', '${id}')">
+          <button class="btn btn-outline-secondary add-skill-point" type="button" data-id="${id}" data-call="${call}" id="add_work_experience_${id}">
             <i class="fas fa-square-plus"></i>
           </button>
         </div>
@@ -544,7 +548,7 @@ const Experience = {
       category: call,
       parentId,
       input: value,
-      selLang: selectedLanguage,
+      selLang: TranslationConfig.getConfig().selectedLangKey,
       column: "skill",
       onSuccess: (newLi) => {
         const container = $(`#skills_list_${parentId}`);
@@ -760,6 +764,14 @@ const Experience = {
 
   // Attach event listeners for various actions
   addEventListeners: function () {
+    $(document).off('click', '.add-skill-point')
+      .on('click', '.add-skill-point', function (e) {
+        e.preventDefault();
+        const call = $(this).data('call');
+        const parentId = $(this).data('id');
+        Experience.addPoint(call, parentId);
+      });
+
     // Add event listener to toggle the visibility of the edit/delete buttons
     $(document)
       .off("click", ".menu-toggle")

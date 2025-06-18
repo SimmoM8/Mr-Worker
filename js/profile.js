@@ -1,4 +1,4 @@
-const Profile = {
+export const Profile = {
   adjustmentX: 0,
   adjustmentY: 0,
   adjustmentScale: 1,
@@ -473,7 +473,3 @@ const Profile = {
     }
   },
 };
-
-$(document).ready(function () {
-  Profile.init();
-});

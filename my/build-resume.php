@@ -1,5 +1,3 @@
-
-
 <?php
 session_start();
 
@@ -14,8 +12,8 @@ error_log("Posted data: " . print_r($_POST, true));
 
 $card_id = $_POST['card_id'] ?? null;
 $selected_language = $_POST['sel_lang'] ?? 'lang_1'; // Default to 'lang_1' if not set
+$selected_lang_code = $_POST['sel_lang_code'] ?? 'en';
 
-error_log("User ID: $user_id, Card ID: $card_id, Selected Language: $selected_language");
 
 if (!$card_id) {
   exit("No resume ID provided.");
@@ -33,6 +31,9 @@ $courses = handleRequest('fetch', 'courses', [], $user_id)['data'] ?? [];
 $work_experience = handleRequest('fetch', 'work_experience', [], $user_id)['data'] ?? [];
 $education = handleRequest('fetch', 'education', [], $user_id)['data'] ?? [];
 
+$global_languages = handleRequest('fetch', 'global_languages', ['user_scope' => false], null)['data'] ?? [];
+$global_language_translations = handleRequest('fetch', 'global_language_translations', ['user_scope' => false], null)['data'] ?? [];
+
 if (!$resume || !$user) {
   exit("Resume or user not found.");
 }
@@ -49,7 +50,10 @@ $resumePackage = [
   'courses' => $courses,
   'work_experience' => $work_experience,
   'education' => $education,
-  'selected_language' => $selected_language
+  'selected_language' => $selected_language,
+  'selected_lang_code' => $selected_lang_code,
+  'global_languages' => $global_languages,
+  'global_language_translations' => $global_language_translations
 ];
 
 // Render PDF from assembled data

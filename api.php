@@ -10,16 +10,16 @@ $request = json_decode(file_get_contents("php://input"), true) ?? [];
 $table = $request['table'] ?? null;
 $action = $request['action'] ?? null;
 
-$user_id = $_SESSION['user_id'] ?? null;
+error_log("Received request: " . json_encode($request));
 
-error_log("Action: $action | Table: $table | Data: " . print_r($request, true));
+$user_id = $_SESSION['user_id'] ?? null;
 
 if (!$table || !$action) {
     sendResponse(false, "Missing table or action.");
 }
 
 // Ensure the table name is valid
-$allowedTables = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses', 'users', 'resumes', 'courses', 'employers', 'user_reports', 'password_resets', 'global_languages', 'user_languages'];
+$allowedTables = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses', 'users', 'resumes', 'courses', 'employers', 'user_reports', 'password_resets', 'global_languages', 'user_languages', 'global_language_translations'];
 if (!in_array($table, $allowedTables)) {
     sendResponse(false, "Invalid table name.");
 }

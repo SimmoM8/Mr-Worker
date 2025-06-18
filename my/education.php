@@ -7,8 +7,3 @@
   </div>
 </section>
 <?php include 'modal-experience.php'; ?>
-<script>
-  if (typeof Experience !== "undefined" && Experience.init) {
-    Experience.init(); // Initialize Experience.js for this page
-  }
-</script>

@@ -1,12 +1,63 @@
-// Global Skills namespace
-const Skills = {
+import { apiRequest } from "./apiUtils.js";
+import { SkillPointManager } from "./SkillPointManager.js";
+import { TranslationConfig } from "./TranslationConfig.js";
+import { setupLanguageSearch, fetchGlobalLanguages } from "./languageSearch.js";
+
+export const Skills = {
   translateMode: false,
 
   // Initialization
   init: function () {
+    console.log("✅ Skills module initialized");
     const skillCategories = ["hard_skills", "soft_skills", "languages", "licenses"];
     this.fetchSkills(skillCategories);
     this.setupEventListeners();
+    this.initLanguageSearchInput();
+    TranslationConfig.onUpdate(() => {
+      SkillPointManager.reRenderAll();
+      this.reRenderAllLanguages();
+      this.reRenderAllLicenses();
+    });
+  },
+
+  initLanguageSearchInput: function () {
+    const inputSelector = "#input_languages";
+    const resultContainerSelector = ".language-search-results";
+
+    const input = $(inputSelector);
+    const container = input.parent();
+    let resultsList = container.find(resultContainerSelector);
+
+    if (resultsList.length === 0) {
+      resultsList = $("<ul class='language-search-results list-group mt-1 position-absolute bg-white border rounded shadow-sm'></ul>").css({
+        maxHeight: "200px",
+        overflowY: "auto",
+        zIndex: 1000,
+        left: 0,
+        top: input.outerHeight(),
+        width: "100%"
+      });
+      container.append(resultsList);
+    }
+
+    const alreadyAddedCodes = $("#languages .skill-item[data-language-code]")
+      .map((_, el) => $(el).dataset.languageCode || $(el).getAttribute("data-language-code"))
+      .get();
+
+    fetchGlobalLanguages().then(allLanguages => {
+      setupLanguageSearch({
+        inputSelector,
+        resultContainerSelector,
+        availableLanguages: allLanguages,
+        alreadyAdded: alreadyAddedCodes,
+        onSelect: (lang) => {
+          input.val(lang.translated_name_en);
+          input.data("langCode", lang.language_code);
+          input.data("langName", lang.translated_name_en);
+          resultsList.hide();
+        }
+      });
+    });
   },
 
   // Event bindings
@@ -36,7 +87,7 @@ const Skills = {
             SkillPointManager.add({
               category,
               input: $(`#input_${category}`).val().trim(),
-              selLang: selectedLanguage,
+              selLang: TranslationConfig.getConfig().selectedLangKey,
               column: "skill",
               onSuccess: (newLi) => {
                 $(`#${category}`).append(newLi);
@@ -46,16 +97,26 @@ const Skills = {
             break;
           }
           case "languages": {
-            const languageKey = `language_${selectedLanguage}`;
+            const input = $("#input_languages");
+            const selectedLangName = input.data("langName");
+            const selectedLangCode = input.data("langCode");
+
+            if (!selectedLangName || !selectedLangCode || input.val().trim() !== selectedLangName) {
+              alert("Please select a valid language from the list.");
+              return;
+            }
+
             Skills.addItem("languages", {
-              [languageKey]: $("#input_languages").val().trim(),
+              language_code: selectedLangCode,
               percentage: 50
             }, ["#input_languages"]);
+            input.removeData("langCode").removeData("langName");
             break;
           }
           case "licenses": {
-            const licenseKey = `license_${selectedLanguage}`;
-            const descriptionKey = `description_${selectedLanguage}`;
+            const selectedLang = TranslationConfig.getConfig().selectedLangKey;
+            const licenseKey = `license_${selectedLang}`;
+            const descriptionKey = `description_${selectedLang}`;
             Skills.addItem("licenses", {
               [licenseKey]: $("#input_license").val().trim(),
               [descriptionKey]: $("#input_license_description").val().trim()
@@ -69,7 +130,10 @@ const Skills = {
 
     $('#licenseModalSave').off('click').on('click', Skills.submitLicenseModal);
 
-    // Combined delete handlers for languages and licenses
+    // Ensure previous listeners for .delete-point are cleared before attaching new ones for languages and licenses
+    ["languages", "licenses"].forEach(category => {
+      doc.off('click', `#${category} .delete-point`);
+    });
     ["languages", "licenses"].forEach(category => {
       doc.on('click', `#${category} .delete-point`, function () {
         const id = $(this).data('id');
@@ -96,24 +160,38 @@ const Skills = {
       apiRequest(category, "fetch")
         .then(response => {
           if (response.success) {
+            console.log(`Fetched ${category} successfully:`, response.data);
             const skillContainer = $(`#${category}`);
             skillContainer.empty();
 
             const skillList = response.data || [];
-            skillList.forEach(skill => {
-              skillContainer.append(
-                category === "licenses" ? Skills.renderLicenseItem(skill, category, response.sel_language, response.ref_language)
-                  : category === "languages" ? Skills.renderLanguageSkill(skill, category, response.sel_language, response.ref_language)
-                    : SkillPointManager.render({
-                      id: skill.id,
-                      column: "skill",
-                      valueObj: skill,
-                      call: category,
-                      isTranslateMode: Skills.translateMode
-                    })
-              );
-            });
-            SkillPointManager.updatePlaceholder(skillContainer, skillList.length > 0);
+            const renderItems = async () => {
+              const renderedItems = await Promise.all(skillList.map(skill => {
+                switch (category) {
+                  case "licenses":
+                    return Promise.resolve(
+                      Skills.renderLicenseItem(skill, category, response.ref_language, response.sel_language)
+                    );
+                  case "languages":
+                    return Skills.renderLanguageSkill(skill, category, response.ref_language);
+                  default:
+                    return Promise.resolve(
+                      SkillPointManager.render({
+                        id: skill.id,
+                        column: "skill",
+                        valueObj: skill,
+                        call: category,
+                        isTranslateMode: Skills.translateMode
+                      })
+                    );
+                }
+              }));
+
+              renderedItems.forEach(item => skillContainer.append(item));
+              SkillPointManager.updatePlaceholder(skillContainer, skillList.length > 0);
+            };
+
+            renderItems();
           } else {
             console.error(`Error fetching skills for ${category}: `, response.message);
           }
@@ -121,12 +199,48 @@ const Skills = {
     });
   },
 
+  reRenderAllLanguages: async function () {
+    const items = $('.language-skill-item');
+
+    const rendered = await Promise.all(items.map(function (_, el) {
+      const item = $(el);
+      const id = item.data('id');
+      const language_code = item.data('language-code');
+      const percentage = item.find('.language-slider').val();
+
+      return Skills.renderLanguageSkill({ id, language_code, percentage }, "languages", TranslationConfig.getConfig().referenceLanguage)
+        .then(newHtml => ({ newHtml, oldEl: item }));
+    }).get());
+
+    rendered.forEach(({ newHtml, oldEl }) => {
+      oldEl.replaceWith(newHtml);
+    });
+  },
+
   // Rendering functions
-  renderLanguageSkill: function (language, call, sel, ref) {
+  renderLanguageSkill: async function (language, call, ref) {
+
+    const { isTranslateMode, selectedLangCode, referenceLanguage } = TranslationConfig.getConfig();
     const ref_language = language[`language_${ref}`]; // Reference language
-    const languageValue = language.language[sel] || ref_language; // Translated language
+    const language_code = language.language_code; // Translated language
+    let languageValue = ref_language; // Default to reference language
+
+    try {
+      const allLanguages = await fetchGlobalLanguages();
+      const match = allLanguages.find(lang => lang.language_code === language_code);
+      languageValue = match.translations[selectedLangCode];
+      if (languageValue) {
+        languageValue = languageValue.charAt(0).toUpperCase() + languageValue.slice(1);
+      }
+    } catch (error) {
+      console.error("Error retrieving translated name for language skill:", error);
+    }
+
+
+    console.log("Translated language value:", language);
+
     return `
-      <li class="skill-item list-group-item" data-id="${language.id}" data-call="${call}">
+      <li class="language-skill-item list-group-item" data-id="${language.id}" data-call="${call}" data-language-code="${language.language_code}">
         <button class="menu-btn shrink btn-outline-danger delete-point" data-id="${language.id}">
           <i class="fas fa-square-minus"></i>
         </button>
@@ -140,14 +254,38 @@ const Skills = {
     `;
   },
 
-  renderLicenseItem: function (license, call, ref, sel) {
+  reRenderAllLicenses: async function () {
+    const items = $('.licenses-skill-item');
+
+    const rendered = await Promise.all(items.map(function (_, el) {
+      const item = $(el);
+      // Parse the license JSON from attribute
+      const license = JSON.parse(item.attr("data-license-json") || "{}");
+
+      return Promise.resolve(
+        Skills.renderLicenseItem(license, "licenses", TranslationConfig.getConfig().referenceLanguage)
+      ).then(newHtml => ({ newHtml, oldEl: item }));
+    }).get());
+
+    rendered.forEach(({ newHtml, oldEl }) => {
+      oldEl.replaceWith(newHtml);
+    });
+  },
+
+  renderLicenseItem: function (license, call, ref) {
+
+    console.log("Rendering license item:", license);
+    const { isTranslateMode, selectedLangKey, referenceLanguage } = TranslationConfig.getConfig();
+
     const ref_license = license[`license_${ref}`];
-    const licenseValue = license.license[sel] || ref_license;
+    const licenseValue = license.license[selectedLangKey] || ref_license;
     const ref_description = license[`description_${ref}`];
-    const descriptionValue = license.description[sel] || ref_description;
+    const descriptionValue = license.description[selectedLangKey] || ref_description;
+    // Encode the full license object as JSON for data-license-json attribute
+    const licenseJson = JSON.stringify(license).replace(/"/g, '&quot;');
 
     return `
-      <li class="skill-item list-group-item" data-id="${license.id}" data-call="${call}">
+      <li class="licenses-skill-item list-group-item" data-id="${license.id}" data-call="${call}" data-license-json="${licenseJson}">
         <button class="menu-btn btn-outline-danger delete-point" data-id="${license.id}">
           <i class="fas fa-trash-alt"></i>
         </button>
@@ -193,7 +331,7 @@ const Skills = {
   // Slider change handler
   handleSliderChange: async function () {
     const slider = $(this);
-    const skillItem = slider.closest('.skill-item');
+    const skillItem = slider.closest('.language-skill-item');
     const newPercentage = slider.val();
     const skillId = slider.data('id');
     const category = slider.data('category');
@@ -218,7 +356,7 @@ const Skills = {
 
   // Edit license modal
   handleLicenseEdit: function (event) {
-    const licenseItem = $(event.currentTarget).closest('.skill-item');
+    const licenseItem = $(event.currentTarget).closest('.licenses-skill-item');
     const licenseId = licenseItem.data('id');
     const licenseName = licenseItem.find('.license-name').text().trim();
     const licenseDescription = licenseItem.find('.license-description').text().trim();
@@ -236,6 +374,7 @@ const Skills = {
 
   // Submit license modal changes
   submitLicenseModal: function () {
+    const selectedLang = TranslationConfig.getConfig().selectedLangKey;
     const licenseId = $('#licenseModal').data('id');
     const newName = $('#licenseModalName').val().trim();
     const newDescription = $('#licenseModalDescription').val().trim();
@@ -246,8 +385,8 @@ const Skills = {
     }
 
     apiRequest("licenses", "update", {
-      [`license_${selectedLanguage}`]: newName,
-      [`description_${selectedLanguage}`]: newDescription
+      [`license_${selectedLang}`]: newName,
+      [`description_${selectedLang}`]: newDescription
     }, { id: licenseId }).then(response => {
       if (response.success) {
         $('#licenseModal').modal('hide');
@@ -295,7 +434,3 @@ const Skills = {
     }
   }
 };
-
-$(document).ready(function () {
-  Skills.init();
-});

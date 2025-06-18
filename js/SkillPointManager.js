@@ -1,4 +1,7 @@
-const SkillPointManager = {
+import { apiRequest } from "./apiUtils.js";
+import { TranslationConfig } from "./TranslationConfig.js";
+
+export const SkillPointManager = {
     /**
      * Render a single skill point <li> DOM element.
      * @param {Object} config
@@ -56,7 +59,6 @@ const SkillPointManager = {
         }
 
         li.data("valueObj", valueObj);
-        console.log("valueObj: ", valueObj);
 
         return li;
     },
@@ -230,7 +232,6 @@ const SkillPointManager = {
     updatePlaceholder: function (container, hasItems) {
         container.find(".placeholder").remove();
         if (!hasItems) {
-            console.log("adding placeholder");
             container.append(
                 $('<li class="placeholder text-muted fst-italic small" style ="background-color: transparent;">No skills added yet</li>')
             );
@@ -258,7 +259,3 @@ const SkillPointManager = {
         });
     }
 };
-
-TranslationConfig.onUpdate(() => {
-    SkillPointManager.reRenderAll();
-});

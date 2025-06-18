@@ -63,18 +63,7 @@ if (!isset($_SESSION['user_id'])) {
       rows="4"></textarea>
     <button id="submitReport" name="submitReport" class="btn btn-primary">Submit</button>
   </form>
-  <script src="../js/navigation.js"></script>
-  <script src="../js/main.js"></script>
-  <script src="../js/TranslationConfig.js"></script>
-  <script src="../js/SkillPointManager.js"></script>
-  <script src="../js/experience.js" defer></script>
-  <script src="../js/skills.js" defer></script>
-  <script src="../js/resumes.js" defer></script>
-  <script src="../js/profile.js" defer></script>
-  <script>
-    const selectedLanguage = "<?= $_SESSION['selected_language'] ?? 'lang_1' ?>";
-  </script>
-
+  <script type="module" src="../js/main.js"></script>
 </body>
 
 </html>

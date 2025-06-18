@@ -1,9 +1,24 @@
-const NavigationManager = {
+//import { Resumes } from "./resumes";
+//import { Skills } from "./skills.js";
+//import { Experience } from "./experience";
+//import { Profile } from "./profile";
+
+const pageModules = {
+    skills: undefined,
+    resumes: undefined,
+    experience: undefined,
+    profile: undefined
+    // Add other pages here
+};
+
+export const NavigationManager = {
     cache: {}, // Stores cached pages
     cachingEnabled: false, // Set to true when ready to enable caching
 
 
     init: function () {
+        console.log("✅ NavigationManager initialized");
+
         // Selecting DOM elements AFTER the DOM has loaded
         this.navButtons = document.querySelectorAll(".sidebar-nav .nav-link"); // Select all sidebar buttons
         this.mainContent = document.getElementById("main-content"); // The main content area
@@ -26,7 +41,21 @@ const NavigationManager = {
         if (this.cachingEnabled && this.cache[pageUrl] && Date.now() - this.cache[pageUrl].timestamp < 300000) { // 5 min expiry
             console.log(`Loading ${pageUrl} from cache`);
             this.mainContent.innerHTML = this.cache[pageUrl].data;
-            this.executeScripts(this.mainContent);
+            const pageName = page.replace(".php", "");
+            const modulePath = `./${page}.js`; // e.g. ./skills.js
+            import(modulePath)
+                .then(module => {
+                    if (module?.default?.init) {
+                        module.default.init(type);
+                    } else {
+                        // Try named exports if default.init() doesn't exist
+                        const exportedKey = Object.keys(module).find(key => typeof module[key]?.init === 'function');
+                        if (exportedKey) {
+                            module[exportedKey].init(type);
+                        }
+                    }
+                })
+                .catch(err => console.error("Module load error:", err));
             this.updateActiveButton(page, type);
             return;
         }
@@ -40,7 +69,21 @@ const NavigationManager = {
                     this.cache[pageUrl] = { data, timestamp: Date.now() }; // Store with timestamp
                 }
                 this.mainContent.innerHTML = data;
-                this.executeScripts(this.mainContent);
+                const pageName = page.replace(".php", "");
+                const modulePath = `./${page}.js`; // e.g. ./skills.js
+                import(modulePath)
+                    .then(module => {
+                        if (module?.default?.init) {
+                            module.default.init(type);
+                        } else {
+                            // Try named exports if default.init() doesn't exist
+                            const exportedKey = Object.keys(module).find(key => typeof module[key]?.init === 'function');
+                            if (exportedKey) {
+                                module[exportedKey].init(type);
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Module load error:", err));
                 this.updateActiveButton(page, type);
                 document.dispatchEvent(new Event("pageLoaded")); // Dispatch event for any extra script listeners
             })
@@ -48,22 +91,6 @@ const NavigationManager = {
                 this.mainContent.innerHTML = "<p>Error loading page.</p>";
                 console.error("Error loading page:", error);
             });
-    },
-
-    executeScripts: function (container) {
-        container.querySelectorAll("script").forEach(script => {
-            const newScript = document.createElement("script");
-
-            if (script.src) {
-                newScript.src = script.src;
-                newScript.async = false;
-            } else {
-                newScript.textContent = script.textContent;
-            }
-
-            script.remove();
-            document.body.appendChild(newScript);
-        });
     },
 
     updateActiveButton: function (page, type = null) {
@@ -107,8 +134,3 @@ const NavigationManager = {
         this.cache = {}; // Reset cache
     }
 };
-
-// Initialize the navigation system
-document.addEventListener("DOMContentLoaded", () => {
-    NavigationManager.init();
-});

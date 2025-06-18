@@ -86,8 +86,3 @@
   </div>
   <p class="alert"></p>
 </section>
-<script>
-  if (typeof Skills !== "undefined" && Skills.init) {
-    Skills.init(); // Initialize Experience.js for this page
-  }
-</script>

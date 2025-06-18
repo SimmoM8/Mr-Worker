@@ -1,5 +1,8 @@
+import { apiRequest } from './apiUtils.js';
+import { TranslationConfig } from './TranslationConfig.js';
+
 // Global Resumes namespace
-const Resumes = {
+export const Resumes = {
   currentNav: 'nav-new', // Tracks active navigation (default is 'new')
 
   currentTab: 'details',
@@ -404,7 +407,7 @@ const Resumes = {
       last_updated
     } = resume;
 
-    const { selectedLangKey, isTranslateMode } = TranslationConfig.getConfig();
+    const { selectedLangKey, isTranslateMode, selectedLangCode } = TranslationConfig.getConfig();
     const displayTitle = isTranslateMode ? ref_title : title?.[selectedLangKey] || ref_title || "-";
     const titleClass = !title?.[selectedLangKey] || isTranslateMode ? "null_message" : "";
 
@@ -466,6 +469,7 @@ const Resumes = {
                 <form action="build-resume.php" method="post">
                   <input type="hidden" name="card_id" value="${id}">
                   <input type="hidden" name="sel_lang" value="${selectedLangKey}">
+                  <input type="hidden" name="sel_lang_code" value="${selectedLangCode}">
                   <button class="btn btn-primary main-btn btn-lg" name="submit">View</button>
                 </form>
                 <div class="btn-icon menu-btn delete-resume-btn" data-id="${id}">

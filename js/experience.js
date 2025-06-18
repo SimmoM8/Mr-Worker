@@ -26,6 +26,7 @@ export const Experience = {
 
     TranslationConfig.onUpdate(() => {
       Experience.reRenderAll();
+      SkillPointManager.reRenderAll();
     });
   },
 

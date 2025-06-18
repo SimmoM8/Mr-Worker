@@ -23,7 +23,11 @@ if (!$data) {
 }
 
 $selected_language = $data['selected_language'] ?? 'lang_1'; // Default to 'lang_1' if not set
-error_log("Selected language: " . $selected_language);
+$selectedLangCode = $data['selected_lang_code'] ?? 'en';
+
+$headings = include(__DIR__ . '/translations/headings.php');
+$translatedHeadings = $headings[$selectedLangCode] ?? $headings['en'];
+
 $title = $data['resume']['job_position'][$selected_language];
 $language = 'en';
 $color1 = hexToRgb($data['resume']['grad_color_1']);

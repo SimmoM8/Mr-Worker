@@ -9,7 +9,7 @@ if ($requiredHeight > $remainingSpace) {
 $currentY = $pdf->GetY();
 
 // Create heading
-drawHeader($pdf, $content['x'] + $content['margin'][3], $currentY, $content['inner_width'], $headings[$language][6], 0, $style);
+drawHeader($pdf, $content['x'] + $content['margin'][3], $currentY, $content['inner_width'], $translatedHeadings['education'], 0, $style);
 $currentY = $pdf->GetY();
 
 $education = array(); // Define work experience (dot points) array to be outputed underneath each employer.

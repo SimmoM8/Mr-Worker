@@ -1,6 +1,6 @@
 <?php
 // Create heading
-drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][3], $side_bar['m_left'], $style);
+drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $translatedHeadings['licenses'], $side_bar['m_left'], $style);
 $currentY = $pdf->GetY();
 
 $licenses = array();

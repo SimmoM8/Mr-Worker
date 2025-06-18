@@ -1,6 +1,6 @@
 <?php
 // Create heading
-drawHeader($pdf, $content['x'] + $content['margin'][3], $currentY, $content['inner_width'], $headings[$language][5], 0, $style);
+drawHeader($pdf, $content['x'] + $content['margin'][3], $currentY, $content['inner_width'], $translatedHeadings['work_experience'], 0, $style);
 $currentY = $pdf->GetY();
 
 $we = array(); // Define work experience (dot points) array to be outputed underneath each employer.

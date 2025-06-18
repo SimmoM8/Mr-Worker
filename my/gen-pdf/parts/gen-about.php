@@ -1,7 +1,7 @@
 <?php
 // Create heading
 $currentY = $pdf->GetY();
-drawHeader($pdf, $content['x'] + $content['margin'][3], $currentY, $content['inner_width'], $headings[$language][4], 0, $style);
+drawHeader($pdf, $content['x'] + $content['margin'][3], $currentY, $content['inner_width'], $translatedHeadings['about_me'], 0, $style);
 $currentY = $pdf->GetY();
 
 $pdf->setX($content['x'] + $content['margin'][3]);

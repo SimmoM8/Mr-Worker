@@ -23,27 +23,6 @@ $pdf->setTextColor(0, 0, 0); // Reset the text color to black.
 
 $title_end = $pdf->GetY();
 
-$headings = array(
-  'en' => array(
-    'Contact Info',
-    'Skills',
-    'Languages',
-    'licenses',
-    'About Me',
-    'Work Experience',
-    'Education',
-  ),
-  'se' => array(
-    'Kontaktinformation',
-    'Kompetens',
-    'Språk',
-    'Tillstånd',
-    'Om Mig',
-    'Arbetserfarenhet',
-    'Utbildning',
-  )
-);
-
 // Create profile image with gradient filled border
 function drawProfile($pdf, $x, $y, $width, $thickness, $imagePath, $style, $scale, $posXRatio, $posYRatio)
 {

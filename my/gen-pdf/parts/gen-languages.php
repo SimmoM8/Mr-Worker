@@ -1,7 +1,16 @@
 <?php
+
+// Retrieve global language data
+$global_languages = $data['global_languages'] ?? [];
+$global_translations = $data['global_language_translations'] ?? [];
+$selected_language = $data['selected_language'] ?? 'lang_1';
+$selected_lang_code = $data['selected_lang_code'] ?? 'en';
+
+
 // Create heading
-drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][2], $side_bar['m_left'], $style);
+drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $translatedHeadings['languages'], $side_bar['m_left'], $style);
 $currentY = $pdf->GetY();
+
 
 $languages = array();
 $sel_lang = explode(',', $data['resume']['languages']); // The id's of the dot points selected for this resume
@@ -9,8 +18,21 @@ $sel_lang = explode(',', $data['resume']['languages']); // The id's of the dot p
 // Add selected languages to the `$languages` array
 foreach ($data['languages'] as $row) {
   if (in_array($row['id'], $sel_lang)) {
+    $translated = 'language'; // fallback if no translation found
+
+    foreach ($global_languages as $g) {
+      if ($g['code'] === $row['language_code']) {
+        foreach ($global_translations as $t) {
+          if ($t['language_id'] == $g['id'] && $t['translation_code'] === $selected_lang_code) {
+            $translated = $t['translated_name'];
+            break 2;
+          }
+        }
+      }
+    }
+
     $languages[] = [
-      'language' => $row['language'][$selected_language],
+      'language' => $translated,
       'percentage' => $row['percentage']
     ];
   }

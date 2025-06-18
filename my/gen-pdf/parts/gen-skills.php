@@ -1,7 +1,7 @@
 <?php
 // Create heading
 $currentY = $pdf->GetY();
-drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][1], $side_bar['m_left'], $style);
+drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $translatedHeadings['skills'], $side_bar['m_left'], $style);
 $currentY = $pdf->GetY();
 
 $pdf->SetFont($style['font'], '', 8);

@@ -45,7 +45,7 @@ foreach ($employers as $employer) {
 
   // Check if there is enough space on the current page
   if ($requiredHeight > $remainingSpace) {
-    newPage($pdf, $side_bar, $content, $profile_info, $headings, $language, $style, $profile_pic_path, $img_scale, $img_pos_x, $img_pos_y);
+    newPage($pdf, $side_bar, $content, $profile_info, $translatedHeadings, $language, $style, $profile_pic_path, $img_scale, $img_pos_x, $img_pos_y);
   }
   $currentY = $pdf->GetY();
 

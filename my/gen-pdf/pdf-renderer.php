@@ -350,28 +350,28 @@ function newPage($pdf, $side_bar, $content, $profile_info, $headings, $language,
     $pdf->Rect($side_bar['x'], $currentY, $side_bar['width'], $availableHeight, ($style['border'] === 1) ? 'D' : 'F');
 
     // Output info
-    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][0], $side_bar['m_left'], $style);
+    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings['contact_info'], $side_bar['m_left'], $style);
     $currentY = $pdf->GetY();
     sbInfo($pdf, $currentY, $side_bar, $style);
     $currentY = $pdf->GetY();
 
 
     // Output skills
-    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][1], $side_bar['m_left'], $style);
+    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings['skills'], $side_bar['m_left'], $style);
     $currentY = $pdf->GetY();
     sbSkills($pdf, $side_bar, $currentY, $side_bar['inner_width'], $style);
     $currentY = $pdf->GetY();
 
 
     // Output languages
-    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][2], $side_bar['m_left'], $style);
+    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings['languages'], $side_bar['m_left'], $style);
     $currentY = $pdf->GetY();
     sbLanguages($pdf, $currentY, $side_bar, $style);
     $currentY = $pdf->GetY();
 
 
     // Output licenses
-    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings[$language][3], $side_bar['m_left'], $style);
+    drawHeader($pdf, $side_bar['x'] + $side_bar['m_left'], $currentY, $side_bar['inner_width'], $headings['licenses'], $side_bar['m_left'], $style);
     $currentY = $pdf->GetY();
     sblicenses($pdf, $currentY, $side_bar, $style);
     $pdf->SetY($new_pageY);

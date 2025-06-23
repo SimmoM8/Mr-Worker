@@ -66,8 +66,8 @@ export const Experience = {
   fetchData: function (call) {
     const containerId = call === "work_experience" ? "#employers" : "#courses";
     const table = call === "work_experience" ? "employers" : "courses";
-    apiRequest(table, "fetch", {
-      columns: ["*"],
+    apiRequest(table, "fetch", {}, {}, {
+      orderBy: { order: "ASC" }
     }).then((response) => {
       if (!response.success) {
         console.error("Failed to fetch data:", response.message);
@@ -212,25 +212,26 @@ export const Experience = {
     const containerId =
       section === "work_experience" ? "#employers" : "#courses";
     const updatedOrder = [
-      ...document.querySelectorAll(`${containerId} .experience_card-container`),
-    ].map((item, index) => ({
-      id: item.getAttribute("id").split("_")[2],
-      order: index + 1,
-    }));
+      ...document.querySelectorAll(`${containerId} .experience_card-container`)
+    ]
+      .filter(item => !item.id.includes("card-new"))
+      .map((item, index) => {
+        const id = item.dataset.id || item.getAttribute("id").split("_").pop();
+        return { id, order: index + 1 };
+      });
 
-    Experience.ajaxRequest(
-      "update-order.php",
-      "POST",
-      {
-        section,
-        order: JSON.stringify(updatedOrder),
-      },
-      () => console.log("Order updated successfully"),
-      (xhr, status, error) => {
+    const table = section === "work_experience" ? "employers" : "courses";
+
+    Promise.all(
+      updatedOrder.map(({ id, order }) =>
+        apiRequest(table, "update", { order }, { id })
+      )
+    )
+      .then(() => console.log("Order updated successfully"))
+      .catch((error) => {
         console.error("Error updating order:", error);
         alert("Error updating order. Please try again.");
-      }
-    );
+      });
   },
 
   // Function to handle collapsing/expanding the experience dot point list

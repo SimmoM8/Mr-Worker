@@ -1,4 +1,8 @@
+import { apiRequest } from "./apiUtils.js";
+import { TranslationConfig } from "./TranslationConfig.js";
+
 export const Profile = {
+  userData: null,
   adjustmentX: 0,
   adjustmentY: 0,
   adjustmentScale: 1,
@@ -28,6 +32,9 @@ export const Profile = {
     this.bindEvents();
     this.renderImage(this.profileImageContainerId, true);
     this.fetchProfileData();
+    TranslationConfig.onUpdate(() => {
+      Profile.renderProfileView();
+    });
   },
 
   bindEvents: function () {
@@ -274,24 +281,25 @@ export const Profile = {
   },
 
   fetchProfileData: function () {
-    $.ajax({
-      url: 'fetch_profile_data.php',
-      method: 'GET',
-      dataType: 'json',
-      success: function (response) {
-        if (response.error) {
-          alert(response.error);
-        } else {
-          Profile.populateProfileForm(response);
-        }
-      },
-      error: function () {
-        alert('Failed to fetch user data');
+    const { selectedLangKey } = TranslationConfig.getConfig();
+
+    apiRequest("users", "fetch").then((response) => {
+      if (response.success && response.data.length > 0) {
+        console.log("Profile data fetched successfully:", response.data);
+        Profile.userData = response.data[0];
+        Profile.renderProfileView();
+      } else {
+        alert(response.message || "Failed to fetch user data.");
       }
     });
   },
 
-  populateProfileForm: function (response) {
+  renderProfileView: function () {
+    if (!this.userData) return;
+
+    const response = this.userData;
+    const { translateMode, selectedLangKey } = TranslationConfig.getConfig();
+
     $('#inputFirstName').val(response.first_name);
     $('#inputLastName').val(response.last_name);
     $('#inputCountryCode').val(response.country_code);
@@ -300,16 +308,22 @@ export const Profile = {
     $('#inputTown').val(response.town);
     $('#inputPostCode').val(response.post_code);
     $('#inputCountry').val(response.country);
-    $('#inputAboutMe').val(response.about_me);
+    $('#inputAboutMe').val(response.about_me[selectedLangKey]);
 
     $('#displayName').text(`${response.first_name} ${response.last_name}`);
     $('#displayMobile').text(`${response.country_code} ${response.mobile}`);
-    $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country_ + response.lang_num}`);
-    $('#displayAbout').text(response.about_me);
+    $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country[selectedLangKey]}`);
 
-    // Add Translation Input if Translate Mode is Active
-    if (this.translateMode) {
-      this.addTranslationInput(response.about_me, 'about_me', 'users');
+    $('#displayAbout').text(response.about_me[selectedLangKey] || 'No information provided.');
+
+    $('#displayAbout').next('.d-flex.align-items-center').remove(); // remove old translation input
+
+    if (translateMode) {
+      this.addTranslationInput(
+        response[`about_me_translation_${selectedLangKey}`],
+        'about_me',
+        'users'
+      );
     }
   },
 
@@ -387,7 +401,7 @@ export const Profile = {
       data: data,
       success: function (response) {
         if (response.success) {
-          Profile.populateProfileForm(data);
+          Profile.renderProfileView(data);
         } else {
           alert(response.error || 'An error occurred while saving the profile.');
         }

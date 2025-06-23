@@ -29,8 +29,15 @@ function getRecords($table, $conditions = [], $fetchMode = 'fetchAll', $columns 
     }
 
     // Add ORDER BY if specified
-    $orderClause = $orderBy ? "ORDER BY `$orderBy`" : "";
-
+    if (is_array($orderBy)) {
+        $key = key($orderBy);
+        $direction = strtoupper($orderBy[$key]) === 'DESC' ? 'DESC' : 'ASC';
+        $orderClause = "ORDER BY `$key` $direction";
+    } elseif (is_string($orderBy) && $orderBy !== '') {
+        $orderClause = "ORDER BY `$orderBy`";
+    } else {
+        $orderClause = "";
+    }
     // Add LIMIT and OFFSET if specified
     $limitClause = ($limit !== null) ? "LIMIT " . (int)$limit : "";
     $offsetClause = ($offset !== null) ? "OFFSET " . (int)$offset : "";
@@ -88,7 +95,7 @@ function updateRecord($table, $data, $conditions)
     $setParts = [];
     $params = [];
     foreach ($data as $column => $value) {
-        $setParts[] = "$column = :set_$column";
+        $setParts[] = "`$column` = :set_$column";
         $params[":set_$column"] = $value;
     }
     $setClause = implode(", ", $setParts);

@@ -21,7 +21,7 @@ if (!$card_id) {
 
 // Fetch all required resume data
 $resume = handleRequest('fetch', 'resumes', ['conditions' => ['id' => $card_id]], $user_id)['data'][0] ?? null;
-$user = handleRequest('fetch', 'users', ['conditions' => ['id' => $user_id]], $user_id)['data'][0] ?? null;
+$user = handleRequest('fetch', 'users', [], $user_id)['data'][0] ?? null;
 $hard_skills = handleRequest('fetch', 'hard_skills', [], $user_id)['data'] ?? [];
 $soft_skills = handleRequest('fetch', 'soft_skills', [], $user_id)['data'] ?? [];
 $languages = handleRequest('fetch', 'languages', [], $user_id)['data'] ?? [];

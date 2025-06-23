@@ -45,7 +45,7 @@ if ($tempFiles) {
 try {
   // Save the image scale, position, and other data in the database
   $stmt = $pdo->prepare(
-    "UPDATE `users` SET `img_scale` = :img_scale, `img_pos_x` = :img_pos_x, `img_pos_y` = :img_pos_y WHERE `id` = :user_id"
+    "UPDATE `users` SET `img_scale` = :img_scale, `img_pos_x` = :img_pos_x, `img_pos_y` = :img_pos_y WHERE `user_id` = :user_id"
   );
 
   $stmt->execute([

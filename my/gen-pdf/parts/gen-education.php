@@ -26,6 +26,7 @@ foreach ($data['education'] as $edu) {
 $courses = [];
 $sel_courses = explode(',', $data['resume']['courses']); // Selected course IDs for this resume
 
+usort($data['courses'], fn($a, $b) => $a['order'] <=> $b['order']);
 foreach ($data['courses'] as $course) {
   if (in_array($course['id'], $sel_courses)) {
     $courses[] = $course;

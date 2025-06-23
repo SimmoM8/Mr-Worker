@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 // Get the user ID from session
 $user_id = $_SESSION['user_id'];
 
-$selectedLanguage = $_SESSION['selected_language'];
+$selectedLanguage = "lang_1";
 
 require '../db.php';
 
@@ -44,7 +44,7 @@ try {
                 post_code = :post_code, 
                 country_$selectedLanguage = :country, 
                 about_me_$selectedLanguage = :about_me 
-            WHERE id = :user_id";
+            WHERE 'user_id' = :user_id";
 
   $stmt = $pdo->prepare($sql);
 

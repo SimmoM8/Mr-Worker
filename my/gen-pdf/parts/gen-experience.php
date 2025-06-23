@@ -22,6 +22,7 @@ $stmt = $pdo->prepare("SELECT * FROM `employers` WHERE user_id = :user_id ORDER 
 $stmt->execute(['user_id' => $user_id]);
 $all_employers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+usort($data['employers'], fn($a, $b) => $a['order'] <=> $b['order']);
 foreach ($data['employers'] as $employer) {
   if (in_array($employer['id'], $sel_employers)) {
     $employers[] = $employer;

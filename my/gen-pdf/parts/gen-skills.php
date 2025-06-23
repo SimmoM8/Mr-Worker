@@ -46,9 +46,11 @@ foreach ($skillWidths as $s) {
   $width = $s['width'] + 2 * $style['skill']['padding'];
   $room = $side_bar['inner_width'] - $width - $style['skill']['gap'];
   $filled = false;
+  $leverage = 2; // Allow small overflow when tight
+
   if (!empty($skillsRow)) {
     foreach ($skillsRow as $key => $r) {
-      if ($width < $r['room']) {
+      if ($width <= $r['room'] + $leverage) {
         $skillsRow[$key][0][] = array('data' => $s['data'], 'width' => $width);
         $skillsRow[$key]['room'] -= $width;
         $filled = true;

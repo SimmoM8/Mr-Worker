@@ -383,6 +383,8 @@ export const Profile = {
   saveProfileData: function (e) {
     e.preventDefault();
 
+    const { selectedLangKey } = TranslationConfig.getConfig();
+
     const data = {
       first_name: $('#inputFirstName').val(),
       last_name: $('#inputLastName').val(),
@@ -391,25 +393,21 @@ export const Profile = {
       street: $('#inputStreet').val(),
       town: $('#inputTown').val(),
       post_code: $('#inputPostCode').val(),
-      country: $('#inputCountry').val(),
-      about_me: $('#inputAboutMe').val(),
     };
 
-    $.ajax({
-      url: 'update-profile.php',
-      method: 'POST',
-      data: data,
-      success: function (response) {
-        if (response.success) {
-          Profile.renderProfileView(data);
-        } else {
-          alert(response.error || 'An error occurred while saving the profile.');
-        }
-      },
-      error: function () {
-        // Show error message
-        showMessage('Failed to save profile data.', false);
+    // Store multi-language fields in nested format
+    data[`country_${selectedLangKey}`] = $('#inputCountry').val();
+    data[`about_me_${selectedLangKey}`] = $('#inputAboutMe').val();
+
+    apiRequest("users", "update", data).then((response) => {
+      if (response.success) {
+        Profile.fetchProfileData(); // Re-fetch to update display
+        Profile.showMessage('Profile updated successfully.');
+      } else {
+        Profile.showMessage(response.error || 'An error occurred while saving the profile.', false);
       }
+    }).catch(() => {
+      Profile.showMessage('Failed to save profile data.', false);
     });
   },
 

@@ -20,6 +20,13 @@ export const Resumes = {
   },
 
   addEventListeners: function () {
+    // Delegate modal tab clicks to Resumes.switchTab
+    $(document).on('click', '#modal_resume .nav-link', function () {
+      const tab = $(this).data('current');
+      if (tab) {
+        Resumes.switchTab(tab);
+      }
+    });
     // Delegate dynamic actions
     $('.resumes-grid').on('click', '.edit-resume-btn', function () {
       const resumeId = $(this).data('id');

@@ -24,10 +24,10 @@ Ideas:<br>
         <!-- Navigation for Edit Mode -->
         <nav id="nav-edit">
           <div class="nav nav-tabs">
-            <button class="nav-link active" id="modal-edit-nav-details-tab" data-current="details" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="true" onClick="Resumes.switchTab('details')">Details</button>
-            <button class="nav-link" id="modal-edit-nav-skills-tab" data-current="skills" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('skills')">Skills</button>
-            <button class="nav-link" id="modal-edit-nav-work_experience-tab" data-current="work_experience" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('work_experience')">Work Experience</button>
-            <button class="nav-link" id="modal-edit-nav-education-tab" data-current="education" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('education')">Education</button>
+            <button class="nav-link active" id="modal-edit-nav-details-tab" data-current="details" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="true">Details</button>
+            <button class="nav-link" id="modal-edit-nav-skills-tab" data-current="skills" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false">Skills</button>
+            <button class="nav-link" id="modal-edit-nav-work_experience-tab" data-current="work_experience" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false">Work Experience</button>
+            <button class="nav-link" id="modal-edit-nav-education-tab" data-current="education" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false">Education</button>
           </div>
         </nav>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick="Resumes.closeModal()"></button>
@@ -36,10 +36,10 @@ Ideas:<br>
         <!-- Navigation for New Mode -->
         <nav id="nav-new">
           <div class="nav nav-pills nav-fill">
-            <button class="nav-link active" id="modal-new-nav-details-tab" data-current="details" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="true" onClick="Resumes.switchTab('details')">Details</button>
-            <button class="nav-link" id="modal-new-nav-skills-tab" data-current="skills" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('skills')" disabled>Skills</button>
-            <button class="nav-link" id="modal-new-nav-work_experience-tab" data-current="work_experience" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('work_experience')" disabled>Work Experience</button>
-            <button class="nav-link" id="modal-new-nav-education-tab" data-current="education" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" onClick="Resumes.switchTab('education')" disabled>Education</button>
+            <button class="nav-link active" id="modal-new-nav-details-tab" data-current="details" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="true">Details</button>
+            <button class="nav-link" id="modal-new-nav-skills-tab" data-current="skills" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" disabled>Skills</button>
+            <button class="nav-link" id="modal-new-nav-work_experience-tab" data-current="work_experience" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" disabled>Work Experience</button>
+            <button class="nav-link" id="modal-new-nav-education-tab" data-current="education" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false" disabled>Education</button>
           </div>
         </nav>
 

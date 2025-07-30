@@ -31,9 +31,14 @@ export async function fetchGlobalLanguages() {
                 translations: {}
             };
         }
-        grouped[langId].translations[row.translation_code] = row.translated_name;
+        // Capitalize every first letter of the translation name/s
+        const capitalized = row.translated_name
+            .split(" ")
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "); grouped[langId].translations[row.translation_code] = capitalized;
+
         if (row.translation_code === "en") {
-            grouped[langId].translated_name_en = row.translated_name;
+            grouped[langId].translated_name_en = capitalized;
         }
     });
 

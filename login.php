@@ -12,12 +12,12 @@ if (!$input || !$password) {
 
 try {
     // Check if input matches either username or email
-    $stmt = $pdo->prepare('SELECT id, password FROM users WHERE email = ?');
+    $stmt = $pdo->prepare('SELECT `user_id`, password FROM users WHERE email = ?');
     $stmt->execute([$input]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_id'] = $user['user_id'];
         header('Location: my/index.php');
         exit;
     } else {

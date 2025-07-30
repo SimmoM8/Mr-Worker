@@ -1,5 +1,6 @@
 import { apiRequest } from './apiUtils.js';
 import { TranslationConfig } from './TranslationConfig.js';
+import { fetchGlobalLanguages } from "./languageSearch.js";
 
 // Global Resumes namespace
 export const Resumes = {
@@ -19,6 +20,33 @@ export const Resumes = {
     });
   },
 
+  resumeDraft: {
+    id: null,
+    title: "",
+    grad_color_1: "",
+    grad_color_2: "",
+    bubble_color: "",
+    background_color: "",
+    skills: {
+      hard_skills: [],
+      soft_skills: [],
+      languages: [],
+      licenses: []
+    },
+    work_experience: {
+      selected_employers: [],
+      skills: []
+    },
+    education: {
+      selected_courses: [],
+      skills: []
+    }
+  },
+
+  isEditMode: function () {
+    return Resumes.currentNav === 'nav-edit';
+  },
+
   addEventListeners: function () {
     // Delegate modal tab clicks to Resumes.switchTab
     $(document).on('click', '#modal_resume .nav-link', function () {
@@ -30,6 +58,7 @@ export const Resumes = {
     // Delegate dynamic actions
     $('.resumes-grid').on('click', '.edit-resume-btn', function () {
       const resumeId = $(this).data('id');
+      console.log("Edit button clicked for resume ID:", resumeId);
       if (!resumeId) {
         console.error('Missing or invalid data-id attribute on edit button.');
         return;
@@ -42,7 +71,7 @@ export const Resumes = {
     });
 
     $(document).on('click', '#btn-add-resume', () => Resumes.openModal('new'));
-    $(document).on('click', '#cancelBtn, .close-button', Resumes.closeModal);
+    $(document).on('click', '#cancelBtn, #closeBtn, .btn-close', Resumes.closeModal);
     $(document).on('click', '#submitBtn', () => Resumes.handleAjax('update_session.php', $('#modal_resume form').serialize(), 'POST', Resumes.nextTab));
     $(document).on('click', '#updateBtn', () => Resumes.handleAjax('update_session.php', $('#modal_resume form').serialize(), 'POST', Resumes.handleUpdateResume));
 
@@ -73,29 +102,54 @@ export const Resumes = {
     Resumes.currentTab = 'details';
     Resumes.configureModal(isEdit);
 
+    console.log(`Opening modal in ${isEdit ? 'edit' : 'new'} mode with ID:`, id);
     $('#modal_resume').modal('show');
 
     if (isEdit) {
-      Resumes.handleAjax('set_session.php', {
-        mode: 'clear'
-      }, 'POST', () => {
-        Resumes.handleAjax('set_session.php', {
-          id,
-          mode
-        }, 'POST', (response) => {
-          if (response.error) {
-            console.error(response.error);
-            alert('Failed to load resume data.');
-            Resumes.closeModal();
-            return;
-          }
+      apiRequest("resumes", "fetch", {}, { id }
+      ).then(response => {
+        if (response.success && response.data.length > 0) {
+          const data = response.data[0];
+          console.log("Fetched resume data:", response);
+          Resumes.resumeDraft = {
+            id: data.id,
+            title: data.title, // multi-language object
+            grad_color_1: data.grad_color_1 || "#ffffff",
+            grad_color_2: data.grad_color_2 || "#ffffff",
+            bubble_color: data.bubble_color || "#ffffff",
+            background_color: data.background_color || "#ffffff",
+            skills: {
+              hard_skills: (data.hard_skills || "").split(",").filter(Boolean),
+              soft_skills: (data.soft_skills || "").split(",").filter(Boolean),
+              languages: (data.languages || "").split(",").filter(Boolean),
+              licenses: (data.licenses || "").split(",").filter(Boolean),
+            },
+            work_experience: {
+              selected_employers: (data.employers || "").split(",").filter(Boolean),
+              skills: (data.work_experience || "").split(",").filter(Boolean)
+            },
+            education: {
+              selected_courses: (data.courses || "").split(",").filter(Boolean),
+              skills: (data.education || "").split(",").filter(Boolean)
+            }
+          };
+          console.log("Resume data loaded:", Resumes.resumeDraft);
           Resumes.activateTab('details');
-        });
+        } else {
+          console.error("Resume not found or failed to fetch.");
+          alert("Failed to load resume data.");
+          Resumes.closeModal();
+        }
+      }).catch(error => {
+        console.error("Error fetching resume:", error);
+        alert("Failed to load resume.");
+        Resumes.closeModal();
       });
     } else {
-      Resumes.handleAjax('set_session.php', {
-        mode
-      }, 'POST', () => Resumes.activateTab('details'));
+      // Reset resumeDraft for new resume creation
+      Resumes.resetResumeDraft();
+      // Load the details tab content for new resume
+      Resumes.activateTab('details');
     }
   },
 
@@ -113,7 +167,7 @@ export const Resumes = {
       .addClass('active')
       .removeAttr('disabled');
 
-    Resumes.loadTabContent('#modal-content', `_${tabName}.php`);
+    Resumes.loadTabContent('#modal-content', `_${tabName}.html`);
 
     // Change the "Next" button to "Create" on the last tab
     const isLastTab = Resumes.getNextTabName(tabName) === null;
@@ -122,16 +176,47 @@ export const Resumes = {
   },
 
   loadTabContent: function (tabId, phpFile) {
+    const langKey = TranslationConfig.getConfig().selectedLangKey;
     $(tabId).html('<div class="loading-spinner">Loading...</div>'); // Show loader
     $.get(phpFile)
       .done((data) => {
         $(tabId).html(data); // Replace with the new tab content
-        if (phpFile.includes('details')) return; // Skip AJAX fetch for _details.php
+        if (phpFile.includes('details')) {
+          setTimeout(() => {
+            $('#title').val(Resumes.resumeDraft.title?.[langKey]);
+            $('#grad_color_1').val(Resumes.resumeDraft.grad_color_1 || '#FF1C1C');
+            $('#grad_color_2').val(Resumes.resumeDraft.grad_color_2 || '#750D64');
+            $('#bubble_color').val(Resumes.resumeDraft.bubble_color || '#FCE8E8');
+            $('#background_color').val(Resumes.resumeDraft.background_color || '#E69BA8');
+
+            // Update CSS theme live
+            document.documentElement.style.setProperty('--c1', Resumes.resumeDraft.grad_color_1 || '#FF1C1C');
+            document.documentElement.style.setProperty('--c2', Resumes.resumeDraft.grad_color_2 || '#750D64');
+            document.documentElement.style.setProperty('--bgc', Resumes.resumeDraft.background_color || '#FCE8E8');
+            document.documentElement.style.setProperty('--bc', Resumes.resumeDraft.bubble_color || '#E69BA8');
+
+            document.querySelector('#grad_color_1').setAttribute('color', Resumes.resumeDraft.grad_color_1 || '#FF1C1C');
+            document.querySelector('#grad_color_2').setAttribute('color', Resumes.resumeDraft.grad_color_2 || '#750D64');
+            document.querySelector('#background_color').setAttribute('color', Resumes.resumeDraft.background_color || '#FCE8E8');
+            document.querySelector('#bubble_color').setAttribute('color', Resumes.resumeDraft.bubble_color || '#E69BA8');
+
+            document.querySelector('#grad_color_1_hidden').setAttribute('value', Resumes.resumeDraft.grad_color_1 || '#FF1C1C');
+            document.querySelector('#grad_color_2_hidden').setAttribute('value', Resumes.resumeDraft.grad_color_2 || '#750D64');
+            document.querySelector('#background_color_hidden').setAttribute('value', Resumes.resumeDraft.background_color || '#FCE8E8');
+            document.querySelector('#bubble_color_hidden').setAttribute('value', Resumes.resumeDraft.bubble_color || '#E69BA8');
+
+            document.querySelector('#colorPicker1').setAttribute('color', Resumes.resumeDraft.grad_color_1 || '#FF1C1C');
+            document.querySelector('#colorPicker2').setAttribute('color', Resumes.resumeDraft.grad_color_2 || '#750D64');
+            document.querySelector('#colorPickerBackground').setAttribute('color', Resumes.resumeDraft.background_color || '#FCE8E8');
+            document.querySelector('#colorPickerBubble').setAttribute('color', Resumes.resumeDraft.bubble_color || '#E69BA8');
+          }, 50);
+          return;
+        }
 
         // Determine the tab type
         const tabType = phpFile.includes('skills')
           ? ['hard_skills', 'soft_skills', 'languages', 'licenses']
-          : [phpFile.replace('_', '').replace('.php', '')];
+          : [phpFile.replace('_', '').replace('.html', '')];
 
         Resumes.fetchAndGenerateList(tabType);
       })
@@ -142,112 +227,105 @@ export const Resumes = {
   },
 
   // Fetch and generate skills and experience for adding or editing a resume
-  fetchAndGenerateList: function (types) {
-    console.log("types: ", types);
-    // First, fetch session data for selected IDs
-    $.ajax({
-      url: 'get_session.php',
-      type: 'GET',
-      success: (sessionData) => {
-        let session;
-        try {
-          session = JSON.parse(sessionData); // Parse session data from the server
-        } catch (e) {
-          console.error("Failed to parse session data:", sessionData);
+  fetchAndGenerateList: async function (types) {
+    const languageNameMap = {};
+    const langKey = TranslationConfig.getConfig().selectedLangKey;
+    const langCode = TranslationConfig.getConfig().selectedLangCode;
+
+    // Load language map only once if 'languages' is one of the requested types
+    if (types.includes('languages')) {
+      const languages = await fetchGlobalLanguages();
+      languages.forEach(lang => {
+        languageNameMap[lang.language_code] = lang.translations?.[langCode];
+      });
+    }
+
+    types.forEach((type) => {
+      const tableName = type === 'work_experience' ? 'employers' : type === 'education' ? 'courses' : type;
+      apiRequest(tableName, "fetch").then(response => {
+        const items = response.data || [];
+        const container = $(`#fetched-${type}`);
+        container.empty();
+
+        if (['work_experience', 'education'].includes(type)) {
+          const isWork = type === 'work_experience';
+          const headerKey = isWork ? 'selected_employers' : 'selected_courses';
+          const selectedHeaderIds = Resumes.resumeDraft[type]?.[headerKey] || [];
+          const selectedSkillIds = Resumes.resumeDraft[type]?.skills || [];
+
+          items.forEach(item => {
+            const isChecked = selectedHeaderIds.includes(String(item.id)) ? 'checked' : '';
+            let skillsHtml = '';
+
+            if (Array.isArray(item.skills) && item.skills.length > 0) {
+              skillsHtml = item.skills
+                .map(i => `
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="${type}_${i.id}" value="${i.id}" name="${type}[]" ${selectedSkillIds.includes(String(i.id)) ? 'checked' : ''}>
+                    <label class="form-check-label" for="${type}_${i.id}">${i.skill?.[langKey]}</label>
+                  </div>
+                `)
+                .join('');
+            } else {
+              skillsHtml = `<p>No skill points to select. You can add skill points in the Skills tab</p>`;
+            }
+
+            const title = item.title?.[langKey] || item.title?.lang_1 || '-';
+            const org = item.organisation || '-';
+            const dates = `${item.start_date || '_'} - ${item.end_date || '_'}`;
+
+            container.append(`
+              <div class="experience_card card card-colored mb-3 ${isChecked ? 'selected' : ''}">
+                <div class="experience-header card-body">
+                  <h5 class="card-title">${title}</h5>
+                  <p class="">${org}</p>
+                  <div class="checkbox-container">
+                    <p style="margin: 0px;">
+                      <small class="text-muted">${dates}</small>
+                    </p>
+                    <input class="form-check-input experience-checkbox" type="checkbox" id="checkbox_${item.id}" value="${item.id}" name="${headerKey}[]" ${isChecked}>
+                  </div>
+                  <div class="toggle-container">
+                    <i class="bi bi-chevron-down toggle-icon"></i>
+                  </div>
+                </div>
+                <div class="collapsible-content">${skillsHtml}</div>
+              </div>
+            `);
+          });
+
           return;
         }
 
-        types.forEach((t) => {
-          $.ajax({
-            url: 'fetch.php',
-            type: 'GET',
-            data: {
-              call: t,
-            },
-            success: (data) => {
-              let parsedData;
-              try {
-                parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-              } catch (e) {
-                console.error(`Failed to parse JSON for ${t}:`, data);
-                return;
-              }
+        // Handle skill categories (unchanged from working code)
+        const selected = Resumes.resumeDraft.skills[type] || [];
 
-              // Extract the actual array if it's wrapped inside a 'data' object
-              const dataArray = Array.isArray(parsedData.data) ? parsedData.data : parsedData;
+        items.forEach(item => {
+          let label = "-";
 
-              if (!Array.isArray(dataArray)) {
-                console.error(`Expected an array but received for ${t}:`, parsedData);
-                return;
-              }
+          if (type === "languages") {
+            const code = item.language_code;
+            label = languageNameMap[code];
+          } else if (item.skill && typeof item.skill === 'object') {
+            label = item.skill[langKey];
+          } else if (item.license && typeof item.license === 'object') {
+            label = item.license[langKey];
+          } else {
+            label = item.skill || item.language || item.license || "-";
+          }
 
-              console.log(`Fetched ${t} data:`, dataArray);
+          const isChecked = selected.includes(String(item.id));
 
-              const container = $(`#fetched-${t}`);
-              container.empty();
-
-              // Ensure session[t] is a string or fallback to an empty string
-              const selectedIds = (session[t] || '').toString().split(',');
-
-              dataArray.forEach((item) => {
-                if (['hard_skills', 'soft_skills', 'languages', 'licenses'].includes(t)) {
-                  // Render for Skills Tab
-                  const isChecked = selectedIds.includes(String(item.id)) ? 'checked' : '';
-
-                  container.append(`
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="${t}_${item.id}" value="${item.id}" name="${t}[]" ${isChecked}>
-          <label class="form-check-label" for="${t}_${item.id}">${item.language || item.license || item.skill}</label>
-        </div>
-      `);
-                } else if (['work_experience', 'education'].includes(t)) {
-                  const p = t === 'education' ? 'courses' : 'employers';
-                  const selectedHeaderIds = (session[p] || '').toString().split(',');
-                  const isChecked = selectedHeaderIds.includes(String(item.id)) ? 'checked' : '';
-                  let skillsHtml = '';
-
-                  if (item.skills && Array.isArray(item.skills)) {
-                    skillsHtml = item.skills
-                      .map(
-                        (i) => `
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="${t}_${i.skill_id}" value="${i.skill_id}" name="${t}[]" ${selectedIds.includes(String(i.skill_id)) ? 'checked' : ''}>
-                <label class="form-check-label" for="${t}_${i.skill_id}">${i.skill_name}</label>
-              </div>
-            `
-                      )
-                      .join('');
-                  } else {
-                    skillsHtml = `<p>No skill points to select. You can add skill points in the Skills tab</p>`;
-                  }
-
-                  container.append(`
-        <div class="experience_card card card-colored mb-3 ${isChecked ? 'selected' : ''}">
-          <div class="experience-header card-body">
-            <h5 class="card-title">${item.title}</h5>
-            <p class="">${item.organization}</p>
-            <div class="checkbox-container">
-              <p style="margin: 0px;">
-                <small class="text-muted">${item.start_date} - ${item.end_date}</small>
-              </p>
-              <input class="form-check-input experience-checkbox" type="checkbox" id="checkbox_${item.id}" value="${item.id}" name="${p}[]" ${isChecked}>
+          container.append(`
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="${type}_${item.id}" value="${item.id}" name="${type}[]" ${isChecked ? 'checked' : ''}>
+              <label class="form-check-label" for="${type}_${item.id}">${label}</label>
             </div>
-            <div class="toggle-container">
-              <i class="bi bi-chevron-down toggle-icon"></i>
-            </div>
-          </div>
-          <div class="collapsible-content">${skillsHtml}</div>
-        </div>
-      `);
-                }
-              });
-            },
-
-            error: (xhr) => console.error(`Error fetching ${t} data:`, xhr.responseText),
-          });
+          `);
         });
-      },
-      error: (xhr) => console.error("Failed to fetch session data:", xhr.responseText),
+      }).catch(err => {
+        console.error(`Error fetching ${type}:`, err);
+      });
     });
   },
 
@@ -258,28 +336,65 @@ export const Resumes = {
     }
 
     if (Resumes.currentTab === nextTab) {
-      console.log("Current tab is the same as the next tab. No action needed.");
       return; // Do nothing if the current tab is clicked again
     }
 
-    Resumes.updateSession(Resumes.currentTab, () => {
+    Resumes.updateResumeDraft(Resumes.currentTab, () => {
       Resumes.activateTab(nextTab);
     });
 
     Resumes.currentTab = nextTab;
   },
 
-  updateSession: function (tabName, callback) {
-    const formData = $(`#${tabName}-form`).serialize();
-    Resumes.handleAjax('update_session.php', formData, 'POST', callback);
+  updateResumeDraft: function (tabName, callback) {
+    if (tabName === 'details') {
+      const form = document.querySelector('#details-form');
+      if (!form) return callback();
+
+      const formData = new FormData(form);
+
+      const langKey = TranslationConfig.getConfig().selectedLangKey;
+      Resumes.resumeDraft.title = {
+        ...Resumes.resumeDraft.title,
+        [langKey]: formData.get('title')
+      };
+      Resumes.resumeDraft.grad_color_1 = formData.get('grad_color_1_hidden');
+      Resumes.resumeDraft.grad_color_2 = formData.get('grad_color_2_hidden');
+      Resumes.resumeDraft.bubble_color = formData.get('bubble_color_hidden');
+      Resumes.resumeDraft.background_color = formData.get('background_color_hidden');
+
+    } else if (tabName === 'skills') {
+      const form = document.querySelector('#skills-form');
+      if (!form) return callback();
+
+      const formData = new FormData(form);
+      ['hard_skills', 'soft_skills', 'languages', 'licenses'].forEach(type => {
+        Resumes.resumeDraft.skills[type] = formData.getAll(`${type}[]`);
+      });
+    } else if (tabName === 'work_experience') {
+      const form = document.querySelector('#work_experience-form');
+      if (!form) return callback();
+
+      const formData = new FormData(form);
+      Resumes.resumeDraft.work_experience.selected_employers = formData.getAll('selected_employers[]');
+      Resumes.resumeDraft.work_experience.skills = formData.getAll('work_experience[]');
+    }
+    else if (tabName === 'education') {
+      const form = document.querySelector('#education-form');
+      if (!form) return callback();
+
+      const formData = new FormData(form);
+      Resumes.resumeDraft.education.selected_courses = formData.getAll('selected_courses[]');
+      Resumes.resumeDraft.education.skills = formData.getAll('education[]');
+    }
+    console.log("Updated resumeDraft:", Resumes.resumeDraft);
+    callback();
   },
 
   closeModal: function () {
     $('#modal_resume').modal('hide');
     $('#modal-content').html('');
-    Resumes.handleAjax('set_session.php', {
-      mode: 'clear'
-    }, 'POST'); // Clear session on close
+    Resumes.resetResumeDraft(); // Clear the draft after closing the modal
   },
 
   handleAjax: function (url, data, method, onSuccess, isFormData = false) {
@@ -295,11 +410,19 @@ export const Resumes = {
   },
 
   handleDelete: function (id) {
-    if (confirm('Are you sure you want to delete this resume?')) {
-      Resumes.handleAjax('delete-resume.php', {
-        id
-      }, 'POST', Resumes.fetchResumes);
-    }
+    if (!id || !confirm("Are you sure you want to delete this resume?")) return;
+
+    apiRequest("resumes", "delete", {}, { id }).then(response => {
+      if (response.success) {
+        Resumes.fetchResumes(); // Refresh the UI
+      } else {
+        alert("Failed to delete resume.");
+        console.error(response.message || response);
+      }
+    }).catch(err => {
+      console.error("Delete failed:", err);
+      alert("An error occurred while deleting the resume.");
+    });
   },
 
   nextTab: function () {
@@ -317,7 +440,7 @@ export const Resumes = {
     }
 
     // Update session with current tab's data
-    Resumes.updateSession(Resumes.currentTab, () => {
+    Resumes.updateResumeDraft(Resumes.currentTab, () => {
       Resumes.activateTab(nextTabName); // Switch to the next tab
       Resumes.currentTab = nextTabName; // Update Resumes.currentTab
     });
@@ -332,53 +455,50 @@ export const Resumes = {
   },
 
   createResume: function () {
-    // Finalize the resume creation process
-    Resumes.handleAjax('create-resume.php', null, 'POST', (response) => {
-      // Append the new resume to the list (assume response contains new resume HTML)
-      if (response.status === 'success') {
-        const grid = document.querySelector('.resumes-grid');
-        const template = document.createElement('div');
-        template.innerHTML = response.card.trim(); // Parse the returned HTML
 
-        // Validate the parsed content
-        const newCard = template.firstChild;
+    Resumes.updateResumeDraft(Resumes.currentTab, () => {
+      const data = Resumes.convertDataForApi(); // Convert resumeDraft to API format
 
-        // Find the parent `.col` containing #card-new_resume
-        const addResumeCard = document.querySelector('.col #card-new_resume');
-        const addResumeCol = addResumeCard ? addResumeCard.parentNode : null;
-
-        // Insert the new card right after the "Add Resume" card's parent `.col`
-        if (addResumeCol.nextSibling) {
-          grid.insertBefore(newCard, addResumeCol.nextSibling);
+      apiRequest("resumes", "insert", data).then(response => {
+        if (response.success) {
+          console.log("Resume created successfully:", response.data);
+          Resumes.fetchResumes(); // Refresh the resumes list after creation
+          Resumes.closeModal(); // Close the modal after creation
         } else {
-          grid.appendChild(newCard); // Append to the end if no next sibling
-        }
-
-      } else {
-        console.error('Failed to create resume:', response);
-        if (response.message) {
+          console.error("Failed to create resume:", response.message);
           alert(`Error: ${response.message}`);
         }
-      }
-
-      // Close the modal and clear the session
-      Resumes.closeModal();
+      }).catch(error => {
+        console.error("Error creating resume:", error);
+        alert("An error occurred while creating the resume. Please try again.");
+      });
     });
   },
 
   handleUpdateResume: function () {
 
-    Resumes.updateSession(Resumes.currentTab, () => {
+    Resumes.updateResumeDraft(Resumes.currentTab, () => {
+      const id = Resumes.resumeDraft.id;
+      const data = Resumes.convertDataForApi(); // Convert resumeDraft to API format
 
-      Resumes.handleAjax('update-resume.php', new FormData($('#modal_resume form')[0]), 'POST', () => {
-        Resumes.fetchResumes();
-        Resumes.closeModal();
-      }, true)
+      apiRequest("resumes", "update", data, { id }).then(response => {
+        if (response.success) {
+          Resumes.fetchResumes(); // Refresh the resumes list after update
+          Resumes.closeModal(); // Close the modal after update
+        } else {
+          console.error("Failed to update resume:", response.message);
+          alert(`Error: ${response.message}`);
+        }
+      }).catch(error => {
+        console.error("Error updating resume:", error);
+        alert("An error occurred while updating the resume. Please try again.");
+      });
     });
   },
 
   fetchResumes: function () {
     apiRequest("resumes", "fetch").then(response => {
+      console.log("Fetched resumes:", response);
       const resumesGrid = $(".resumes-grid");
       resumesGrid.empty();
 
@@ -407,7 +527,7 @@ export const Resumes = {
     // Extract all used resume properties into constants
     const {
       id,
-      job_position: title,
+      title,
       ref_title,
       grad_color_1,
       grad_color_2,
@@ -455,9 +575,9 @@ export const Resumes = {
                   <div class="d-flex align-items-center mt-2">
                     <input type="text" class="form-control translate-input" placeholder="Enter translation"
                            value="${title?.[selectedLangKey] || ''}"
-                           data-id="${id}" data-call="resumes" data-column="job_position">
+                           data-id="${id}" data-call="resumes" data-column="title">
                     <button class="btn btn-success btn-sm ms-2 save-translation"
-                            data-id="${id}" data-call="resumes" data-column="job_position">
+                            data-id="${id}" data-call="resumes" data-column="title">
                       Save
                     </button>
                   </div>
@@ -507,5 +627,53 @@ export const Resumes = {
       card.closest(".col").replaceWith(newCard);
     });
   },
+
+  resetResumeDraft: function () {
+    Resumes.resumeDraft = {
+      id: null,
+      title: "",
+      grad_color_1: "",
+      grad_color_2: "",
+      bubble_color: "",
+      background_color: "",
+      skills: {
+        hard_skills: [],
+        soft_skills: [],
+        languages: [],
+        licenses: []
+      },
+      work_experience: {
+        selected_employers: [],
+        skills: []
+      },
+      education: {
+        selected_courses: [],
+        skills: []
+      }
+    };
+    console.log("Resume draft reset to initial state:", Resumes.resumeDraft);
+  },
+
+  convertDataForApi: function () {
+    const langKey = TranslationConfig.getConfig().selectedLangKey;
+    return {
+      [`title_${langKey}`]: Resumes.resumeDraft.title?.[langKey],
+      grad_color_1: Resumes.resumeDraft.grad_color_1,
+      grad_color_2: Resumes.resumeDraft.grad_color_2,
+      bubble_color: Resumes.resumeDraft.bubble_color,
+      background_color: Resumes.resumeDraft.background_color,
+
+      hard_skills: Resumes.resumeDraft.skills.hard_skills.join(','),
+      soft_skills: Resumes.resumeDraft.skills.soft_skills.join(','),
+      languages: Resumes.resumeDraft.skills.languages.join(','),
+      licenses: Resumes.resumeDraft.skills.licenses.join(','),
+
+      employers: Resumes.resumeDraft.work_experience.selected_employers.join(','),
+      work_experience: Resumes.resumeDraft.work_experience.skills.join(','),
+
+      courses: Resumes.resumeDraft.education.selected_courses.join(','),
+      education: Resumes.resumeDraft.education.skills.join(','),
+    };
+  }
 };
 

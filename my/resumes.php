@@ -30,7 +30,7 @@ Ideas:<br>
             <button class="nav-link" id="modal-edit-nav-education-tab" data-current="education" data-bs-toggle="tab" data-bs-target="#modal-content" type="button" role="tab" aria-controls="modal-content" aria-selected="false">Education</button>
           </div>
         </nav>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick="Resumes.closeModal()"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <!-- Navigation for New Mode -->
@@ -50,9 +50,9 @@ Ideas:<br>
       </div>
       <div class="modal-footer">
         <!-- Buttons -->
-        <button type="button" class="btn btn-secondary main-btn" id="cancelBtn" data-bs-dismiss="modal" aria-label="Cancel" onClick="Resumes.closeModal()">Cancel</button>
+        <button type="button" class="btn btn-secondary main-btn" id="cancelBtn" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
         <button type="button" class="btn btn-primary main-btn" id="submitBtn">Next</button>
-        <button type="button" class="btn btn-secondary main-btn" id="closeBtn" data-bs-dismiss="modal" aria-label="Close" onClick="Resumes.closeModal()">Close</button>
+        <button type="button" class="btn btn-secondary main-btn" id="closeBtn" data-bs-dismiss="modal" aria-label="Close">Close</button>
         <button type="button" class="btn btn-primary main-btn" id="updateBtn">Save</button>
       </div>
     </div>

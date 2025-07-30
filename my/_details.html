@@ -1,0 +1,144 @@
+<style>
+  :root {
+    --pWidth: 500px;
+    --c1: #FF1C1C;
+    --c2: #750D64;
+    --bgc: #FCE8E8;
+    --bc: #E69BA8;
+  }
+</style>
+
+<form id="details-form">
+  <div class="card card-body card-colored">
+    <h4>Job Position</h4>
+    <div>
+      <label for="title" class="form-label">What type of job position are you searching?</label>
+      <input type="text" class="form-control" id="title" name="title" placeholder="Shop Manager">
+    </div>
+  </div>
+  <div class="card card-body card-colored">
+    <h4>Theme Gradient</h4>
+    <p>These will be the theme colours for this resume. Colour 1 is the left colour of the gradient, and colour 2 is the right.</p>
+    <div class="form-colors row">
+      <div class="color-inputs col-md-6">
+        <div class="color-input card card-body card-flat">
+          <div class="circle-wrapper">
+            <div class="color-circle" id="colorCircle1"></div>
+            <div class="overlay" id="editIcon1">Edit</div>
+          </div>
+          <div class="hex-input">
+            <label class="" for="grad_color_1">Colour 1</label>
+            <hex-input class="" id="grad_color_1" name="grad_color_1" prefixed="true"></hex-input>
+          </div>
+          <!-- Hidden input to store the value -->
+          <input type="hidden" id="grad_color_1_hidden" name="grad_color_1_hidden">
+          <hex-color-picker class="color-picker shadow" id="colorPicker1"></hex-color-picker>
+        </div>
+        <div class="more-colors">
+          <div class="color-input card card-body card-flat">
+            <div class="circle-wrapper">
+              <div class="overlay" id="editIcon2">Edit</div>
+              <div class="color-circle" id="colorCircle2"></div>
+            </div>
+            <div class="hex-input">
+              <label class="" for="grad_color_2">Colour 2</label>
+              <hex-input class="" id="grad_color_2" name="grad_color_2" prefixed="true"></hex-input>
+            </div>
+            <!-- Hidden input to store the value -->
+            <input type="hidden" id="grad_color_2_hidden" name="grad_color_2_hidden">
+            <hex-color-picker class="color-picker shadow" id="colorPicker2"></hex-color-picker>
+          </div>
+          <div class="color-input card card-body card-flat">
+            <div class="circle-wrapper">
+              <div class="overlay" id="editIconBackground">Edit</div>
+              <div class="color-circle" id="colorCircleBackground"></div>
+            </div>
+            <div class="hex-input">
+              <label class="" for="background_color">Background Color</label>
+              <hex-input class="" id="background_color" name="background_color" prefixed="true"></hex-input>
+            </div>
+            <!-- Hidden input to store the value -->
+            <input type="hidden" id="background_color_hidden" name="background_color_hidden">
+            <hex-color-picker class="color-picker shadow" id="colorPickerBackground"></hex-color-picker>
+          </div>
+          <div class="color-input card card-body card-flat">
+            <div class="circle-wrapper">
+              <div class="overlay" id="editIconBubble">Edit</div>
+              <div class="color-circle" id="colorCircleBubble"></div>
+            </div>
+            <div class="hex-input">
+              <label class="" for="bubble_color">Bubble Colour</label>
+              <hex-input class="" id="bubble_color" name="bubble_color" prefixed="true"></hex-input>
+            </div>
+            <!-- Hidden input to store the value -->
+            <input type="hidden" id="bubble_color_hidden" name="bubble_color_hidden">
+            <hex-color-picker class="color-picker shadow" id="colorPickerBubble"></hex-color-picker>
+          </div>
+        </div>
+        <p class="menu-btn link" id="moreColors" style="flex-grow: 1;">Click for more colours</p>
+      </div>
+      <section class="preview col-md-6">
+        <div class="preview-wrapper">
+          <div id="p-name">
+            <div class="p-heading"></div>
+          </div>
+          <div id="p-titleBar"></div>
+          <div id="p-profile"></div>
+          <div class="p-container">
+            <div id="p-sideBar">
+              <div>
+                <p class="p-heading" style="width: 80%"></p>
+                <div class="p-bar"></div>
+                <div class="p-infoList">
+                  <div>
+                    <div class="p-icon-wrapper">
+                      <div class="p-icon"></div>
+                    </div>
+                    <div class="p-text"></div>
+                  </div>
+                  <div>
+                    <div class="p-icon-wrapper">
+                      <div class="p-icon"></div>
+                    </div>
+                    <div class="p-text"></div>
+                  </div>
+                  <div>
+                    <div class="p-icon-wrapper">
+                      <div class="p-icon"></div>
+                    </div>
+                    <div class="p-text"></div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p class="p-heading" style="width: 38%"></p>
+                <div class="p-bar"></div>
+                <div class="bubbles-wrapper">
+                  <div class="p-bubbles" style="width: 80%;"></div>
+                  <div class="p-bubbles" style="width: 60%;"></div>
+                  <div class="p-bubbles" style="width: 100%;"></div>
+                  <div class="p-bubbles" style="width: 70%;"></div>
+                </div>
+              </div>
+            </div>
+            <div id="p-content">
+              <div>
+                <div class="p-heading" style="width: 43%"></div>
+                <div class="p-bar"></div>
+                <div class="p-text" style="height: 20%"></div>
+              </div>
+              <div>
+                <div class="p-heading" style="width: 68%"></div>
+                <div class="p-bar"></div>
+                <div class="p-text" style="height: 32%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <script src="../js/color_pickers.js" type="module"></script>
+    </div>
+  </div>
+  <input type="hidden" name="submit-details" id="submit-details-hidden" value="false">
+  <div class="col-12"></div>
+</form>

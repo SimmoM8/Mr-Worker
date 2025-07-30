@@ -28,7 +28,7 @@ $selectedLangCode = $data['selected_lang_code'] ?? 'en';
 $headings = include(__DIR__ . '/translations/headings.php');
 $translatedHeadings = $headings[$selectedLangCode] ?? $headings['en'];
 
-$title = $data['resume']['job_position'][$selected_language];
+$title = $data['resume']['title'][$selected_language];
 $language = 'en';
 $color1 = hexToRgb($data['resume']['grad_color_1']);
 $color2 = hexToRgb($data['resume']['grad_color_2']);

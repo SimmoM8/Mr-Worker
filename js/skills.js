@@ -229,9 +229,6 @@ export const Skills = {
       const allLanguages = await fetchGlobalLanguages();
       const match = allLanguages.find(lang => lang.language_code === language_code);
       languageValue = match.translations[selectedLangCode];
-      if (languageValue) {
-        languageValue = languageValue.charAt(0).toUpperCase() + languageValue.slice(1);
-      }
     } catch (error) {
       console.error("Error retrieving translated name for language skill:", error);
     }

@@ -11,6 +11,15 @@ export const TranslationConfig = (function () {
     let availableLanguages = [];
 
     let subscribers = [];
+    let ready = false;
+    let readyCallbacks = [];
+    function onReady(callback) {
+        if (ready) {
+            callback(getConfig());
+        } else {
+            readyCallbacks.push(callback);
+        }
+    }
 
     function getConfig() {
         const selectedSlotIndex = slotLanguages.findIndex(code => code === selectedLangCode);
@@ -203,6 +212,9 @@ export const TranslationConfig = (function () {
                     selectedLangCode = storedLang;
                 }
                 setSlotLanguages(langs);
+                // --- onReady logic here ---
+                ready = true;
+                readyCallbacks.forEach(fn => typeof fn === "function" && fn(getConfig()));
             } else {
                 // Insert an empty row if none exists
                 apiRequest("user_languages", "insert", {
@@ -212,6 +224,9 @@ export const TranslationConfig = (function () {
                     lang_4: null
                 }).then(() => {
                     setSlotLanguages([]);
+                    // --- onReady logic here ---
+                    ready = true;
+                    readyCallbacks.forEach(fn => typeof fn === "function" && fn(getConfig()));
                 });
             }
         });
@@ -247,6 +262,7 @@ export const TranslationConfig = (function () {
         setReferenceLanguage,
         setSelectedLanguage,
         setSlotLanguages,
-        onUpdate
+        onUpdate,
+        onReady
     };
 })();

@@ -10,7 +10,9 @@ export const Skills = {
   init: function () {
     console.log("✅ Skills module initialized");
     const skillCategories = ["hard_skills", "soft_skills", "languages", "licenses"];
-    this.fetchSkills(skillCategories);
+    TranslationConfig.onReady(() => {
+      this.fetchSkills(skillCategories);
+    });
     this.setupEventListeners();
     this.initLanguageSearchInput();
     TranslationConfig.onUpdate(() => {

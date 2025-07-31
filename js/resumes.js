@@ -11,8 +11,10 @@ export const Resumes = {
   init: function () {
     this.currentNav = 'nav-new';
     this.currentTab = 'details';
-    Resumes.fetchResumes();
-    Resumes.addEventListeners();
+    TranslationConfig.onReady(() => {
+      Resumes.fetchResumes();
+      Resumes.addEventListeners();
+    });
 
     // Register translation update callback to re-render resume cards
     TranslationConfig.onUpdate(() => {
@@ -103,7 +105,13 @@ export const Resumes = {
     Resumes.configureModal(isEdit);
 
     console.log(`Opening modal in ${isEdit ? 'edit' : 'new'} mode with ID:`, id);
-    $('#modal_resume').modal('show');
+    setTimeout(() => {
+      const modalEl = document.getElementById('modal_resume');
+      if (modalEl) {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.show();
+      }
+    }, 0);
 
     if (isEdit) {
       apiRequest("resumes", "fetch", {}, { id }

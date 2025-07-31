@@ -15,14 +15,16 @@ export const Experience = {
     this.currentEditId = null;
     this.isDragging = false;
 
-    // Detect page and initialize the correct logic
-    if (!!document.querySelector("#employers")) {
-      Experience.initWorkExperience();
-    } else if (!!document.querySelector("#courses")) {
-      Experience.initEducation();
-    } else {
-      console.warn("No matching page detected for Experience.js");
-    }
+    // Detect page and initialize the correct logic after TranslationConfig is ready
+    TranslationConfig.onReady(() => {
+      if (!!document.querySelector("#employers")) {
+        Experience.initWorkExperience();
+      } else if (!!document.querySelector("#courses")) {
+        Experience.initEducation();
+      } else {
+        console.warn("No matching page detected for Experience.js");
+      }
+    });
 
     TranslationConfig.onUpdate(() => {
       Experience.reRenderAll();

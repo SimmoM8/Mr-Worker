@@ -31,7 +31,9 @@ export const Profile = {
 
     this.bindEvents();
     this.renderImage(this.profileImageContainerId, true);
-    this.fetchProfileData();
+    TranslationConfig.onReady(() => {
+      this.fetchProfileData();
+    });
     TranslationConfig.onUpdate(() => {
       Profile.renderProfileView();
     });

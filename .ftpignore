@@ -1,14 +1,16 @@
 .git/
 .github/
 .gitignore
+.ftpignore
 .env
 node_modules/
-uploads/
 README.md
 composer.lock
 package-lock.json
 yarn.lock
 tests/
+*.sql
 *.log
 .DS_Store
 .vscode/
+db.php

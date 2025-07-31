@@ -4,6 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+define('USE_GD_IMAGE_CONVERSION', true); // Set to false to use ImageMagick CLI
+
 $userId = $_SESSION['user_id'] ?? 'default'; // Use null coalescing operator
 $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) {
@@ -45,8 +47,8 @@ if (!move_uploaded_file($_FILES['file']['tmp_name'], $convFilePath)) {
 
 $jpegFilePath = $uploadDir . $tempFileName;
 
-// Convert the file to JPEG using CLI
-if (!convertToJpegUsingCli($convFilePath, $jpegFilePath)) {
+// Convert the file to JPEG using GD or ImageMagick based on config
+if (!convertImageToJpeg($convFilePath, $jpegFilePath)) {
   unlink($convFilePath); // Clean up the temporary file
   respondWithError("Image conversion failed.", 500);
 }
@@ -69,39 +71,6 @@ function clearTemporaryFiles($uploadDir, $userId)
   foreach ($tempFiles as $tempFile) {
     unlink($tempFile);
   }
-}
-
-/**
- * Convert any image to JPEG using ImageMagick CLI.
- *
- * @param string $inputPath Path to the input image file.
- * @param string $outputPath Path to save the converted JPEG file.
- * @return bool True on success, false on failure.
- */
-function convertToJpegUsingCli($inputPath, $outputPath)
-{
-  // Detect if running locally or on Google Cloud
-  $isLocal = strpos(PHP_OS, 'WIN') !== false || file_exists('/Applications/XAMPP/xamppfiles');
-
-  // Set the ImageMagick path
-  $convertCommand = $isLocal ? '/usr/local/bin/magick' : '/usr/bin/convert';
-
-  // Ensure the input file exists
-  if (!file_exists($inputPath)) {
-    error_log("Input file for conversion does not exist: $inputPath");
-    return false;
-  }
-
-  $command = escapeshellcmd("$convertCommand '$inputPath' -auto-orient -strip -quality 90 '$outputPath'");
-  exec($command, $output, $returnVar);
-
-
-  // Log command and output for debugging
-  error_log("ImageMagick Command: $command");
-  error_log("Command Output: " . implode("\n", $output));
-  error_log("Return Value: $returnVar");
-
-  return $returnVar === 0; // Return true if the conversion is successful
 }
 
 /**
@@ -136,4 +105,59 @@ function respondWithError($message, $statusCode = 500)
   ]);
   exit;
 }
-?>
+
+/**
+ * Convert an image to JPEG using GD or ImageMagick based on config.
+ */
+function convertImageToJpeg($inputPath, $outputPath)
+{
+  if (USE_GD_IMAGE_CONVERSION) {
+    return convertUsingGd($inputPath, $outputPath);
+  } else {
+    return convertUsingImagemagick($inputPath, $outputPath);
+  }
+}
+
+/**
+ * Convert using GD library.
+ */
+function convertUsingGd($inputPath, $outputPath)
+{
+  $info = getimagesize($inputPath);
+  $mime = $info['mime'] ?? '';
+
+  switch ($mime) {
+    case 'image/jpeg':
+      $image = imagecreatefromjpeg($inputPath);
+      break;
+    case 'image/png':
+      $image = imagecreatefrompng($inputPath);
+      break;
+    case 'image/gif':
+      $image = imagecreatefromgif($inputPath);
+      break;
+    default:
+      error_log("Unsupported image format for GD: $mime");
+      return false;
+  }
+
+  $success = imagejpeg($image, $outputPath, 90);
+  imagedestroy($image);
+  return $success;
+}
+
+/**
+ * Convert using ImageMagick CLI.
+ */
+function convertUsingImagemagick($inputPath, $outputPath)
+{
+  $convertPath = '/usr/bin/convert'; // Adjust path as needed
+  $command = escapeshellcmd("$convertPath '$inputPath' -auto-orient -strip -quality 90 '$outputPath'");
+  exec($command, $output, $returnVar);
+
+  error_log("ImageMagick Command: $command");
+  error_log("Command Output: " . implode("\n", $output));
+  error_log("Return Value: $returnVar");
+
+  return $returnVar === 0;
+}

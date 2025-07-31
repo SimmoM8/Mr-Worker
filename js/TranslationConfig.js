@@ -39,6 +39,7 @@ export const TranslationConfig = (function () {
 
     function setSelectedLanguage(langCode) {
         selectedLangCode = langCode;
+        localStorage.setItem("selectedLangCode", langCode);
         renderSelectedLanguageUI();
         notifySubscribers();
     }
@@ -115,11 +116,18 @@ export const TranslationConfig = (function () {
     function addSlotLanguage(langCode) {
         const updatedSlots = [...slotLanguages.filter(Boolean), langCode].slice(0, 4);
         setSlotLanguages(updatedSlots);
-        apiRequest("user_languages", "update", {
-            lang_1: updatedSlots[0] || null,
-            lang_2: updatedSlots[1] || null,
-            lang_3: updatedSlots[2] || null,
-            lang_4: updatedSlots[3] || null
+        apiRequest("user_languages", "fetch").then(res => {
+            const payload = {
+                lang_1: updatedSlots[0] || null,
+                lang_2: updatedSlots[1] || null,
+                lang_3: updatedSlots[2] || null,
+                lang_4: updatedSlots[3] || null
+            };
+            if (res.success && res.data && res.data.length > 0) {
+                apiRequest("user_languages", "update", payload);
+            } else {
+                apiRequest("user_languages", "insert", payload);
+            }
         });
     }
 
@@ -165,7 +173,7 @@ export const TranslationConfig = (function () {
 
     function setSlotLanguages(newArray) {
         slotLanguages = [...newArray];
-        if (!selectedLangCode && slotLanguages.length > 0) {
+        if (!selectedLangCode || !slotLanguages.includes(selectedLangCode)) {
             selectedLangCode = slotLanguages[0];
         }
         renderSelectedLanguageUI();
@@ -182,7 +190,7 @@ export const TranslationConfig = (function () {
 
         // Fetch user's saved slot languages from the database using global api() helper
         apiRequest("user_languages", "fetch").then(res => {
-            if (res.success && res.data) {
+            if (res.success && res.data && res.data.length > 0) {
                 const row = res.data[0];
                 const langs = [
                     row.lang_1,
@@ -190,7 +198,21 @@ export const TranslationConfig = (function () {
                     row.lang_3,
                     row.lang_4
                 ];
+                const storedLang = localStorage.getItem("selectedLangCode");
+                if (storedLang && langs.includes(storedLang)) {
+                    selectedLangCode = storedLang;
+                }
                 setSlotLanguages(langs);
+            } else {
+                // Insert an empty row if none exists
+                apiRequest("user_languages", "insert", {
+                    lang_1: null,
+                    lang_2: null,
+                    lang_3: null,
+                    lang_4: null
+                }).then(() => {
+                    setSlotLanguages([]);
+                });
             }
         });
 

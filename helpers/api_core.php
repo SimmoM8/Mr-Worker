@@ -1,5 +1,3 @@
-
-
 <?php
 require_once __DIR__ . '/../db_queries.php';
 
@@ -17,13 +15,16 @@ function handleRequest($action, $table, $request, $user_id)
     }
 
     $data = $request['data'] ?? [];
+    enforceUserScope($request, $user_id);
     $conditions = $request['conditions'] ?? [];
     $fetchMode = $action === 'fetch' ? 'fetchAll' : 'execute';
 
     $userRequiredTables = ['work_experience', 'education', 'hard_skills', 'soft_skills', 'languages', 'licenses', 'resumes', 'user_reports', 'user_translations'];
 
-    if ($action === 'insert' && in_array($table, $userRequiredTables)) {
-        if ($user_id && !isset($data['user_id'])) {
+    if ($action === 'insert' && $user_id) {
+        $user_scope = $request['user_scope'] ?? true;
+        $user_dependant = $request['user_dependant'] ?? true;
+        if ($user_scope !== false && $user_dependant !== false && !isset($data['user_id'])) {
             $data['user_id'] = $user_id;
         }
     }

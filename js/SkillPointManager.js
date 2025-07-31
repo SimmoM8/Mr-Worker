@@ -170,6 +170,8 @@ export const SkillPointManager = {
                     call: category,
                     parentId
                 });
+                // Remove the placeholder before calling onSuccess
+                $(`#${category}`).find(".placeholder").remove();
                 if (typeof onSuccess === "function") onSuccess(newLi);
             } else {
                 console.error("Add failed:", res.message);
@@ -233,7 +235,7 @@ export const SkillPointManager = {
         container.find(".placeholder").remove();
         if (!hasItems) {
             container.append(
-                $('<li class="placeholder text-muted fst-italic small" style ="background-color: transparent;">No skills added yet</li>')
+                $('<li class="placeholder text-muted fst-italic small" style="background-color: transparent; cursor: default;">No skills added yet</li>')
             );
         }
     },

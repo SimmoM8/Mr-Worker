@@ -26,6 +26,7 @@ $title_end = $pdf->GetY();
 // Create profile image with gradient filled border
 function drawProfile($pdf, $x, $y, $width, $thickness, $imagePath, $style, $scale, $posXRatio, $posYRatio)
 {
+  error_log("Drawing profile image at x: $x, y: $y, width: $width, thickness: $thickness, scale: $scale, posXRatio: $posXRatio, posYRatio: $posYRatio");
   $defaultImagePath = __DIR__ . '/../uploads/profile_default.jpeg'; // Ensure default fallback is JPEG
 
 

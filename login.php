@@ -1,8 +1,12 @@
 <?php
 require 'db.php';
 session_start();
+session_unset();
+session_destroy();
+session_start();
+session_regenerate_id(true);
 
-$input = htmlspecialchars(trim($_POST['username'])); // Can be either username or email
+$input = htmlspecialchars(trim($_POST['email'])); // Can be either username or email
 $password = $_POST['password'];
 
 if (!$input || !$password) {

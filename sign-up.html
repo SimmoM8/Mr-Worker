@@ -63,14 +63,6 @@ body, html {
     </div>
     <div class="step" style="display: none;">
       <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-      </div>
-      <button type="button" class="btn btn-primary w-100" onclick="nextStep()">Next</button>
-      <button type="button" class="btn btn-secondary w-100 mt-2" onclick="prevStep()">Back</button>
-    </div>
-    <div class="step" style="display: none;">
-      <div class="mb-3">
         <label for="password" class="form-label">Password</label>
         <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
       </div>
@@ -132,34 +124,21 @@ function validateStep(step) {
             }
             break;
         case 1:
-            field = document.getElementById('first_name');
-            if (!field.value) {
-                messageDiv.innerHTML = 'Please enter your first name';
+            const first = document.getElementById('first_name');
+            const last = document.getElementById('last_name');
+            if (!first.value || !last.value) {
+                messageDiv.innerHTML = 'Please enter your first and last name';
                 isValid = false;
             }
             break;
         case 2:
-            field = document.getElementById('last_name');
-            if (!field.value) {
-                messageDiv.innerHTML = 'Please enter your last name';
-                isValid = false;
-            }
-            break;
-        case 3:
-            field = document.getElementById('username');
-            if (!field.value) {
-                messageDiv.innerHTML = 'Please enter a username';
-                isValid = false;
-            }
-            break;
-        case 4:
             field = document.getElementById('password');
             if (!field.value) {
                 messageDiv.innerHTML = 'Password is required';
                 isValid = false;
             }
             break;
-        case 5:
+        case 3:
             field = document.getElementById('confirmPassword');
             if (!field.value) {
                 messageDiv.innerHTML = 'Confirm Password is required';
@@ -185,11 +164,12 @@ function submitForm() {
             email: document.getElementById('email').value,
             first_name: document.getElementById('first_name').value,
             last_name: document.getElementById('last_name').value,
-            username: document.getElementById('username').value,
             password: document.getElementById('password').value,
             confirmPassword: document.getElementById('confirmPassword').value,
 			type: 'sign_up'
         };
+
+        console.log("Submitting form data:", formData);
 
         $.ajax({
             url: 'register.php',
@@ -210,7 +190,7 @@ function submitForm() {
                         }
 					});
                 } else {
-                    messageDiv.innerHTML = response.error;
+                    messageDiv.innerHTML = response.error || 'Registration failed';
                     messageDiv.classList.remove('text-success');
                     messageDiv.classList.add('text-danger');
                 }
@@ -218,6 +198,7 @@ function submitForm() {
             error: function(xhr, status, error) {
                 messageDiv.innerHTML = `Error submitting form: ${error}`;
                 messageDiv.classList.add('text-danger');
+                console.error("AJAX error response:", xhr.responseText);
             }
         });
     }

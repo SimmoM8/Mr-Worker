@@ -15,7 +15,11 @@ function handleRequest($action, $table, $request, $user_id)
     }
 
     $data = $request['data'] ?? [];
-    enforceUserScope($request, $user_id);
+    $user_scope = $request['user_scope'] ?? true;
+    $user_dependant = $request['user_dependant'] ?? true;
+    if ($user_scope !== false && $user_dependant !== false) {
+        enforceUserScope($request, $user_id, true);
+    }
     $conditions = $request['conditions'] ?? [];
     $fetchMode = $action === 'fetch' ? 'fetchAll' : 'execute';
 

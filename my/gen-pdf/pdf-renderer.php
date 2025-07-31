@@ -68,7 +68,9 @@ function hexToRgb($hexColor)
 
 
 // PROFILE DATA
-$profile_pic_path = 'uploads/profile_picture_user_' . $_SESSION['user_id'] . '.jpeg';
+$default_pic_path = 'uploads/profile_default.jpeg';
+$user_pic_path = 'uploads/profile_picture_user_' . $_SESSION['user_id'] . '.jpeg';
+$profile_pic_path = file_exists($user_pic_path) ? $user_pic_path : $default_pic_path;
 $profile_info = array(
     'first_name' => $first_name,
     'last_name' => $last_name,

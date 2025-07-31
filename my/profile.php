@@ -96,7 +96,7 @@
             </div>
             <p class="display-group" id="displayAbout">Lorem ipsum dolor sit amet...</p>
             <div class="d-none edit-group">
-              <textarea class="form-control" id="inputAboutMe" name="about_me" rows="3"></textarea>
+              <textarea class="form-control" id="inputAboutMe" name="about_me" rows="12"></textarea>
             </div>
           </div>
         </div>

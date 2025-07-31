@@ -307,12 +307,14 @@ export const Profile = {
     $('#inputStreet').val(response.street);
     $('#inputTown').val(response.town);
     $('#inputPostCode').val(response.post_code);
-    $('#inputCountry').val(response.country);
+    $('#inputCountry').val(response.country[selectedLangKey]);
     $('#inputAboutMe').val(response.about_me[selectedLangKey]);
 
     $('#displayName').text(`${response.first_name} ${response.last_name}`);
     $('#displayMobile').text(`${response.country_code} ${response.mobile}`);
     $('#displayAddress').html(`${response.street}<br>${response.town}, ${response.post_code}<br>${response.country[selectedLangKey]}`);
+
+    console.log("Rendering profile view with data:", response);
 
     $('#displayAbout').text(response.about_me[selectedLangKey] || 'No information provided.');
 
@@ -398,6 +400,8 @@ export const Profile = {
     // Store multi-language fields in nested format
     data[`country_${selectedLangKey}`] = $('#inputCountry').val();
     data[`about_me_${selectedLangKey}`] = $('#inputAboutMe').val();
+
+    console.log("Saving profile data:", data);
 
     apiRequest("users", "update", data).then((response) => {
       if (response.success) {

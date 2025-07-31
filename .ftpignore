@@ -1,0 +1,14 @@
+.git/
+.github/
+.gitignore
+.env
+node_modules/
+uploads/
+README.md
+composer.lock
+package-lock.json
+yarn.lock
+tests/
+*.log
+.DS_Store
+.vscode/

@@ -1,0 +1,22 @@
+
+
+{
+  "ignore": [
+    ".git/**",
+    ".github/**",
+    ".gitignore",
+    ".ftp-deploy-sync.json",
+    ".env",
+    "node_modules/**",
+    "README.md",
+    "composer.lock",
+    "package-lock.json",
+    "yarn.lock",
+    "tests/**",
+    "*.sql",
+    "*.log",
+    ".DS_Store",
+    ".vscode/**",
+    "db.php"
+  ]
+}

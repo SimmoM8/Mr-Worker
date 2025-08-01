@@ -1,3 +1,5 @@
 .DS_Store
 my/uploads/*
 webhook-handler.php
+react-frontend/node_modules
+react-frontend/dist

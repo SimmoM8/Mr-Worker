@@ -1,0 +1,16 @@
+.app-layout {
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.main-content {
+    overflow-y: auto;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}

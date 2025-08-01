@@ -12,7 +12,13 @@ $action = $request['action'] ?? null;
 
 error_log("Received request: " . json_encode($request));
 
+// TEMP: simulate logged in user during React dev
+$_SESSION['user_id'] = 1; // or whatever your test user is
+
+
 $user_id = $_SESSION['user_id'] ?? null;
+
+error_log("USER ID: " . $_SESSION['user_id']); // Add this
 
 if (!$table || !$action) {
     sendResponse(false, "Missing table or action.");
